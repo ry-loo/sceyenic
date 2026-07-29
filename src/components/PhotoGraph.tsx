@@ -19,7 +19,8 @@ import type { OrbitControls as OrbitControlsImpl } from "three-stdlib";
 import {
   buildPhotoGraph,
   getCategoryColor,
-  FOCUS_CAMERA_OFFSET,
+  LANDING_CAMERA_OFFSET,
+  LANDING_LOOK_BIAS,
   type GraphNode,
 } from "@/data/graph";
 import { Lightbox } from "@/components/Lightbox";
@@ -233,14 +234,19 @@ function Scene({
   const controls = useRef<OrbitControlsImpl>(null);
   const { camera } = useThree();
 
+  // Click-to-focus only — initial view stays at the default zoomed-out camera
   useFrame((_, delta) => {
     const target = focusRef.current;
     if (!target || !controls.current) return;
-    const look = new THREE.Vector3(target.x, target.y, target.z);
+    const look = new THREE.Vector3(
+      target.x + LANDING_LOOK_BIAS.x * 0.4,
+      target.y + LANDING_LOOK_BIAS.y * 0.4,
+      target.z + LANDING_LOOK_BIAS.z * 0.4,
+    );
     const desiredCam = new THREE.Vector3(
-      target.x + FOCUS_CAMERA_OFFSET.x,
-      target.y + FOCUS_CAMERA_OFFSET.y,
-      target.z + FOCUS_CAMERA_OFFSET.z,
+      target.x + LANDING_CAMERA_OFFSET.x,
+      target.y + LANDING_CAMERA_OFFSET.y,
+      target.z + LANDING_CAMERA_OFFSET.z,
     );
     camera.position.lerp(desiredCam, 1 - Math.exp(-2.4 * delta));
     controls.current.target.lerp(look, 1 - Math.exp(-2.4 * delta));
