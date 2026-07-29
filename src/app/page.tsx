@@ -28,10 +28,10 @@ export default function HomePage() {
         <div className="mx-auto max-w-[1400px] px-5 pt-20 pb-24 sm:px-8 sm:pt-28 sm:pb-32 lg:px-10">
           <div className="mb-8 max-w-2xl">
             <h2 className="font-display text-[clamp(1.75rem,4vw,2.75rem)] leading-[1.1] font-semibold tracking-[-0.04em] text-white">
-              Browse by category
+              Explore my work
             </h2>
             <p className="mt-2 text-[15px] text-white/45">
-              One image from each set. Open any card to jump into the full gallery.
+              A few different paths through the work. Open any card to step into the full set.
             </p>
           </div>
 
