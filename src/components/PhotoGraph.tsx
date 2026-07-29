@@ -17,7 +17,7 @@ import {
   type GraphNode,
 } from "@/data/graph";
 import { Lightbox } from "@/components/Lightbox";
-import { FilmLightLeaks } from "@/components/FilmLightLeaks";
+import { SceneLightLeaks } from "@/components/SceneLightLeaks";
 import type { PortfolioImage } from "@/data/portfolio";
 
 type HoverInfo = {
@@ -161,6 +161,7 @@ function Scene({
     <>
       <color attach="background" args={["#000000"]} />
       <ambientLight intensity={0.75} />
+      <SceneLightLeaks />
       <EdgeLines nodes={nodes} links={links} />
       {nodes.map((node) => (
         <PhotoNode
@@ -238,8 +239,6 @@ export function PhotoGraph() {
           focusRef={focusRef}
         />
       </Canvas>
-
-      <FilmLightLeaks />
 
       <div className="pointer-events-none absolute inset-0 z-10">
         <div className="absolute top-20 left-5 max-w-md sm:top-24 sm:left-10">
