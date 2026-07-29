@@ -148,7 +148,7 @@ function EdgeLines({
 }
 
 const MAX_DISTANCE = 95;
-const PASSTHROUGH_THRESHOLD = 88;
+const PASSTHROUGH_THRESHOLD = 82;
 
 function Scene({
   nodes,
@@ -275,9 +275,25 @@ export function PhotoGraph() {
       className="relative h-dvh w-full overflow-hidden bg-transparent"
       onWheelCapture={(e) => {
         if (!controlsRef.current) return;
-        controlsRef.current.enableZoom = !(
-          e.deltaY > 0 && cameraDistRef.current >= PASSTHROUGH_THRESHOLD
-        );
+        const shouldPassThrough =
+          e.deltaY > 0 && cameraDistRef.current >= PASSTHROUGH_THRESHOLD;
+
+        if (shouldPassThrough) {
+          const cameraObject = controlsRef.current.object;
+          const direction = new THREE.Vector3()
+            .subVectors(cameraObject.position, controlsRef.current.target)
+            .normalize();
+
+          cameraObject.position
+            .copy(controlsRef.current.target)
+            .addScaledVector(direction, MAX_DISTANCE);
+          cameraDistRef.current = MAX_DISTANCE;
+          controlsRef.current.enableZoom = false;
+          controlsRef.current.update();
+          return;
+        }
+
+        controlsRef.current.enableZoom = true;
       }}
     >
       <Canvas
