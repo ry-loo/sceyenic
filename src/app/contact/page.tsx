@@ -9,24 +9,25 @@ export const metadata: Metadata = {
 
 export default function ContactPage() {
   return (
-    <div className="bg-[#f5f5f7] pt-28 pb-24 sm:pt-36 sm:pb-32">
-      <article className="mx-auto max-w-[640px] px-5 sm:px-8">
-        <p className="text-[12px] font-medium tracking-[0.16em] text-[#86868b] uppercase">
-          Contact
+    <div className="px-3 pt-20 pb-12 sm:px-6 sm:pt-24 sm:pb-16 lg:px-10">
+      <article className="album-page relative mx-auto max-w-[640px] overflow-hidden rounded-sm px-6 py-12 sm:px-12 sm:py-16">
+        <p className="font-caption text-[10px] tracking-[0.2em] text-[var(--muted)] uppercase">
+          Leave a note
         </p>
-        <h1 className="mt-4 font-display text-[clamp(2.5rem,6vw,4rem)] leading-[1.05] font-semibold tracking-[-0.045em] text-[#1d1d1f]">
-          Let’s make something.
+        <h1 className="mt-4 text-3xl tracking-wide text-[var(--ink)] sm:text-4xl">
+          Contact
         </h1>
-        <p className="mt-6 text-[17px] leading-relaxed text-[#86868b]">
-          Tell me a little about the project. Prefer email?{" "}
+        <p className="mt-5 font-caption text-[11px] leading-relaxed tracking-[0.04em] text-[var(--muted)]">
+          For bookings and collaborations — or email{" "}
           <a
             href={`mailto:${site.email}`}
-            className="text-[#1d1d1f] underline decoration-[#d2d2d7] underline-offset-4 transition-colors hover:decoration-[#1d1d1f]"
+            className="text-[var(--ink)] underline decoration-[rgba(60,50,30,0.35)] underline-offset-4"
           >
             {site.email}
           </a>
+          .
         </p>
-        <div className="mt-12 rounded-[28px] border border-black/5 bg-white p-6 sm:p-8">
+        <div className="mt-10">
           <ContactForm />
         </div>
       </article>
