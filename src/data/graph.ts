@@ -17,8 +17,12 @@ export type GraphLink = {
   target: string;
 };
 
-/** Camera offset from the landing photo — looks straight at it so it sits screen-center. */
-export const LANDING_CAMERA_OFFSET = { x: 0, y: 0.55, z: 10.2 } as const;
+/** Camera offset from the landing photo.
+ *  Keeps the photo as the visual focal point in the open area to the right of the left title column.
+ */
+export const LANDING_CAMERA_OFFSET = { x: -3.6, y: 0.7, z: 10.5 } as const;
+/** Aim slightly left of the photo so it reads centered in the graph area (not under the title). */
+export const LANDING_LOOK_BIAS = { x: -1.8, y: 0.15, z: 0 } as const;
 
 const CATEGORY_COLORS: Record<string, string> = {
   street: "#ff4d6d",
