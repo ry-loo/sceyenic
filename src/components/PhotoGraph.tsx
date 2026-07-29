@@ -5,7 +5,6 @@ import {
   useRef,
   useState,
   useCallback,
-  useEffect,
   type MutableRefObject,
 } from "react";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
@@ -159,6 +158,7 @@ function Scene({
   onSelect,
   focusRef,
   cameraDistRef,
+  controlsRef,
 }: {
   nodes: GraphNode[];
   links: { source: string; target: string }[];
@@ -167,21 +167,21 @@ function Scene({
   onSelect: (node: GraphNode) => void;
   focusRef: MutableRefObject<GraphNode | null>;
   cameraDistRef: MutableRefObject<number>;
+  controlsRef: MutableRefObject<OrbitControlsImpl | null>;
 }) {
-  const controls = useRef<OrbitControlsImpl>(null);
   const { camera } = useThree();
 
   useFrame(() => {
-    if (controls.current) {
+    if (controlsRef.current) {
       cameraDistRef.current = camera.position.distanceTo(
-        controls.current.target,
+        controlsRef.current.target,
       );
     }
   });
 
   useFrame((_, delta) => {
     const target = focusRef.current;
-    if (!target || !controls.current) return;
+    if (!target || !controlsRef.current) return;
     const look = new THREE.Vector3(
       target.x + LANDING_LOOK_BIAS.x * 0.4,
       target.y + LANDING_LOOK_BIAS.y * 0.4,
@@ -193,8 +193,8 @@ function Scene({
       target.z + LANDING_CAMERA_OFFSET.z,
     );
     camera.position.lerp(desiredCam, 1 - Math.exp(-2.4 * delta));
-    controls.current.target.lerp(look, 1 - Math.exp(-2.4 * delta));
-    controls.current.update();
+    controlsRef.current.target.lerp(look, 1 - Math.exp(-2.4 * delta));
+    controlsRef.current.update();
   });
 
   return (
@@ -220,7 +220,7 @@ function Scene({
         />
       ))}
       <OrbitControls
-        ref={controls}
+        ref={controlsRef}
         makeDefault
         enableDamping
         dampingFactor={0.06}
@@ -245,21 +245,8 @@ export function PhotoGraph() {
   const [hover, setHover] = useState<HoverInfo | null>(null);
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
   const focusRef = useRef<GraphNode | null>(null);
+  const controlsRef = useRef<OrbitControlsImpl | null>(null);
   const cameraDistRef = useRef(0);
-  const containerRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const el = containerRef.current;
-    if (!el) return;
-    const onWheel = (e: WheelEvent) => {
-      if (e.deltaY > 0 && cameraDistRef.current >= PASSTHROUGH_THRESHOLD) {
-        e.stopPropagation();
-        window.scrollBy({ top: e.deltaY, behavior: "auto" });
-      }
-    };
-    el.addEventListener("wheel", onWheel, { passive: false });
-    return () => el.removeEventListener("wheel", onWheel);
-  }, []);
 
   const images: PortfolioImage[] = useMemo(
     () => nodes.map((n) => n.image),
@@ -284,7 +271,15 @@ export function PhotoGraph() {
   );
 
   return (
-    <div ref={containerRef} className="relative h-dvh w-full overflow-hidden bg-transparent">
+    <div
+      className="relative h-dvh w-full overflow-hidden bg-transparent"
+      onWheelCapture={(e) => {
+        if (!controlsRef.current) return;
+        controlsRef.current.enableZoom = !(
+          e.deltaY > 0 && cameraDistRef.current >= PASSTHROUGH_THRESHOLD
+        );
+      }}
+    >
       <Canvas
         camera={{ position: [-50, 36, -36], fov: 48, near: 0.1, far: 300 }}
         dpr={[1, 1.75]}
@@ -303,6 +298,7 @@ export function PhotoGraph() {
           onSelect={onSelect}
           focusRef={focusRef}
           cameraDistRef={cameraDistRef}
+          controlsRef={controlsRef}
         />
       </Canvas>
 
