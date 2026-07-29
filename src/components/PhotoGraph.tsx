@@ -19,9 +19,7 @@ import type { OrbitControls as OrbitControlsImpl } from "three-stdlib";
 import {
   buildPhotoGraph,
   getCategoryColor,
-  getLandingNode,
-  LANDING_CAMERA_OFFSET,
-  LANDING_LOOK_BIAS,
+  FOCUS_CAMERA_OFFSET,
   type GraphNode,
 } from "@/data/graph";
 import { Lightbox } from "@/components/Lightbox";
@@ -234,39 +232,15 @@ function Scene({
 }) {
   const controls = useRef<OrbitControlsImpl>(null);
   const { camera } = useThree();
-  const framedLanding = useRef(false);
-  const landing = useMemo(() => getLandingNode(nodes), [nodes]);
-
-  // Frame landing photo as focal point beside the left title column
-  useFrame(() => {
-    if (framedLanding.current || !landing || !controls.current) return;
-    const look = new THREE.Vector3(
-      landing.x + LANDING_LOOK_BIAS.x,
-      landing.y + LANDING_LOOK_BIAS.y,
-      landing.z + LANDING_LOOK_BIAS.z,
-    );
-    camera.position.set(
-      landing.x + LANDING_CAMERA_OFFSET.x,
-      landing.y + LANDING_CAMERA_OFFSET.y,
-      landing.z + LANDING_CAMERA_OFFSET.z,
-    );
-    controls.current.target.copy(look);
-    controls.current.update();
-    framedLanding.current = true;
-  });
 
   useFrame((_, delta) => {
     const target = focusRef.current;
     if (!target || !controls.current) return;
-    const look = new THREE.Vector3(
-      target.x + LANDING_LOOK_BIAS.x * 0.4,
-      target.y + LANDING_LOOK_BIAS.y * 0.4,
-      target.z + LANDING_LOOK_BIAS.z * 0.4,
-    );
+    const look = new THREE.Vector3(target.x, target.y, target.z);
     const desiredCam = new THREE.Vector3(
-      target.x + LANDING_CAMERA_OFFSET.x,
-      target.y + LANDING_CAMERA_OFFSET.y,
-      target.z + LANDING_CAMERA_OFFSET.z,
+      target.x + FOCUS_CAMERA_OFFSET.x,
+      target.y + FOCUS_CAMERA_OFFSET.y,
+      target.z + FOCUS_CAMERA_OFFSET.z,
     );
     camera.position.lerp(desiredCam, 1 - Math.exp(-2.4 * delta));
     controls.current.target.lerp(look, 1 - Math.exp(-2.4 * delta));
