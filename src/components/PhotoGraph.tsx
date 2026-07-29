@@ -44,6 +44,13 @@ function PhotoNode({
   const texture = useTexture(node.image.src);
   texture.colorSpace = THREE.SRGBColorSpace;
 
+  const groupRef = useRef<THREE.Group>(null);
+  const photoMatRef = useRef<THREE.MeshBasicMaterial>(null);
+  const glowMatRef = useRef<THREE.MeshBasicMaterial>(null);
+  const coreMatRef = useRef<THREE.MeshBasicMaterial>(null);
+  const worldPos = useRef(new THREE.Vector3());
+  const { camera } = useThree();
+
   const aspect = node.image.width / Math.max(node.image.height, 1);
   const base = 2.4;
   const w = aspect >= 1 ? base : base * aspect;
@@ -51,16 +58,35 @@ function PhotoNode({
   const scale = highlighted ? 1.35 : 1;
   const glow = getCategoryColor(node.category);
 
+  useFrame(() => {
+    if (!groupRef.current || !photoMatRef.current) return;
+    groupRef.current.getWorldPosition(worldPos.current);
+    const dist = camera.position.distanceTo(worldPos.current);
+    // Very slight haze: clear up close, gently softens with distance
+    const t = THREE.MathUtils.clamp((dist - 24) / 60, 0, 1);
+    const haze = t * t;
+    photoMatRef.current.opacity = highlighted ? 1 : 1 - haze * 0.22;
+    if (glowMatRef.current) {
+      glowMatRef.current.opacity =
+        (highlighted ? 0.5 : 0.16) * (1 - haze * 0.35);
+    }
+    if (coreMatRef.current) {
+      coreMatRef.current.opacity = 0.85 * (1 - haze * 0.4);
+    }
+  });
+
   return (
-    <group position={[node.x, node.y, node.z]}>
+    <group ref={groupRef} position={[node.x, node.y, node.z]}>
       <Billboard follow>
         <mesh scale={[scale * 1.1, scale * 1.1, 1]} position={[0, 0, -0.03]}>
           <planeGeometry args={[w + 0.4, h + 0.4]} />
           <meshBasicMaterial
+            ref={glowMatRef}
             color={glow}
             transparent
             opacity={highlighted ? 0.5 : 0.16}
             depthWrite={false}
+            fog
           />
         </mesh>
         <mesh
@@ -85,12 +111,26 @@ function PhotoNode({
           }}
         >
           <planeGeometry args={[w, h]} />
-          <meshBasicMaterial map={texture} toneMapped={false} />
+          <meshBasicMaterial
+            ref={photoMatRef}
+            map={texture}
+            toneMapped={false}
+            transparent
+            opacity={1}
+            depthWrite
+            fog
+          />
         </mesh>
       </Billboard>
       <mesh>
         <sphereGeometry args={[0.1, 12, 12]} />
-        <meshBasicMaterial color={glow} transparent opacity={0.85} />
+        <meshBasicMaterial
+          ref={coreMatRef}
+          color={glow}
+          transparent
+          opacity={0.85}
+          fog
+        />
       </mesh>
     </group>
   );
@@ -128,6 +168,7 @@ function EdgeLines({
         transparent
         opacity={0.55}
         depthWrite={false}
+        fog
       />
     </lineSegments>
   );
@@ -163,7 +204,8 @@ function Scene({
 
   return (
     <>
-      <fog attach="fog" args={["#050505", 70, 160]} />
+      {/* Soft depth haze — distant nodes gently fade into the dark */}
+      <fog attach="fog" args={["#080706", 38, 105]} />
       <ambientLight intensity={0.7} />
       <Stars
         radius={120}
