@@ -142,6 +142,6 @@ export const socialLinks = [
 
 export const site = {
   name: "sceyenic",
-  email: "hello@sceyenic.com",
+  email: "sceyenic@gmail.com",
   tagline: "Photography",
 };

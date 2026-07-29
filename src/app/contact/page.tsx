@@ -18,7 +18,7 @@ export default function ContactPage() {
           Let’s make something.
         </h1>
         <p className="mt-6 text-[17px] leading-relaxed text-white/55">
-          Tell me a little about the project. Prefer email?{" "}
+          Have something in mind? Send a note here, or email me at{" "}
           <a
             href={`mailto:${site.email}`}
             className="text-white underline decoration-white/25 underline-offset-4 transition-colors hover:decoration-white"
