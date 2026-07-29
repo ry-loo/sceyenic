@@ -27,6 +27,7 @@ function extras(
   label: string,
   start = 7,
   count = 8,
+  landingNumber?: number,
 ): PortfolioImage[] {
   return Array.from({ length: count }, (_, i) => {
     const n = start + i;
@@ -37,6 +38,7 @@ function extras(
       alt: `${label} ${n}`,
       width: size.width,
       height: size.height,
+      ...(n === landingNumber ? { label: "landing photo" as const } : {}),
     };
   });
 }
@@ -50,7 +52,7 @@ export const categories: Category[] = [
       { src: "/images/street/01.jpg", alt: "Street photograph 1", width: 800, height: 1200 },
       { src: "/images/street/02.jpg", alt: "Street photograph 2", width: 1200, height: 800 },
       { src: "/images/street/03.jpg", alt: "Street photograph 3", width: 900, height: 900 },
-      { src: "/images/street/04.jpg", alt: "Street photograph 4", width: 800, height: 1100, label: "landing photo" },
+      { src: "/images/street/04.jpg", alt: "Street photograph 4", width: 800, height: 1100 },
       { src: "/images/street/05.jpg", alt: "Street photograph 5", width: 1100, height: 750 },
       { src: "/images/street/06.jpg", alt: "Street photograph 6", width: 850, height: 1200 },
       ...extras("street", "Street photograph"),
@@ -67,7 +69,7 @@ export const categories: Category[] = [
       { src: "/images/photojournalism/04.jpg", alt: "Photojournalism 4", width: 900, height: 1200 },
       { src: "/images/photojournalism/05.jpg", alt: "Photojournalism 5", width: 1100, height: 900 },
       { src: "/images/photojournalism/06.jpg", alt: "Photojournalism 6", width: 800, height: 1000 },
-      ...extras("photojournalism", "Photojournalism"),
+      ...extras("photojournalism", "Photojournalism", 7, 8, 13),
     ],
   },
   {

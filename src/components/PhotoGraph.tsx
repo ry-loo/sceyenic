@@ -19,6 +19,7 @@ import type { OrbitControls as OrbitControlsImpl } from "three-stdlib";
 import {
   buildPhotoGraph,
   getCategoryColor,
+  getLandingNode,
   LANDING_CAMERA_OFFSET,
   LANDING_LOOK_BIAS,
   type GraphNode,
@@ -79,8 +80,8 @@ function PhotoNode({
 
     let opacity = 1;
 
-    // Overview only: hide a photo if its frame overlaps the small title block.
-    if (dist > 24) {
+    // Keep hero title clear — never suppress the landing focal photo
+    if (!node.isLanding && dist < 75) {
       camRight.current.setFromMatrixColumn(camera.matrixWorld, 0).normalize();
       camUp.current.setFromMatrixColumn(camera.matrixWorld, 1).normalize();
       // Modest inset — don't treat distant oversized projections as huge hit areas
@@ -111,8 +112,7 @@ function PhotoNode({
       }
 
       if (hitsZone) {
-        const overview = THREE.MathUtils.clamp((dist - 24) / 18, 0, 1);
-        opacity = 1 - overview;
+        opacity = 0;
       }
     }
 
@@ -251,8 +251,27 @@ function Scene({
 }) {
   const controls = useRef<OrbitControlsImpl>(null);
   const { camera } = useThree();
+  const framedLanding = useRef(false);
+  const landing = useMemo(() => getLandingNode(nodes), [nodes]);
 
-  // Click-to-focus only — initial view stays at the default zoomed-out camera
+  // Frame the labeled landing photo on first load
+  useFrame(() => {
+    if (framedLanding.current || !landing || !controls.current) return;
+    const look = new THREE.Vector3(
+      landing.x + LANDING_LOOK_BIAS.x,
+      landing.y + LANDING_LOOK_BIAS.y,
+      landing.z + LANDING_LOOK_BIAS.z,
+    );
+    camera.position.set(
+      landing.x + LANDING_CAMERA_OFFSET.x,
+      landing.y + LANDING_CAMERA_OFFSET.y,
+      landing.z + LANDING_CAMERA_OFFSET.z,
+    );
+    controls.current.target.copy(look);
+    controls.current.update();
+    framedLanding.current = true;
+  });
+
   useFrame((_, delta) => {
     const target = focusRef.current;
     if (!target || !controls.current) return;
