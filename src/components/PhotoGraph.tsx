@@ -257,7 +257,7 @@ export function PhotoGraph() {
   return (
     <div className="relative h-dvh w-full overflow-hidden bg-transparent">
       <Canvas
-        camera={{ position: [-46, 33, -33], fov: 48, near: 0.1, far: 300 }}
+        camera={{ position: [-50, 36, -36], fov: 48, near: 0.1, far: 300 }}
         dpr={[1, 1.75]}
         gl={{ antialias: true, alpha: true, premultipliedAlpha: false }}
         onCreated={({ gl }) => {
