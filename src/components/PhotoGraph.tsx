@@ -33,11 +33,11 @@ type HoverInfo = {
 };
 
 /**
- * Left title column — matches the original hero copy placement.
+ * Tight AABB around the left hero title + instructions only.
  * Normalized: x 0–1 left→right, y 0–1 top→bottom.
  */
 function inTextSafeZone(sx: number, sy: number) {
-  return sx >= 0 && sx <= 0.5 && sy >= 0.1 && sy <= 0.56;
+  return sx >= 0.02 && sx <= 0.34 && sy >= 0.14 && sy <= 0.42;
 }
 
 function PhotoNode({
@@ -79,23 +79,19 @@ function PhotoNode({
 
     let opacity = 1;
 
-    // At overview distance, hide any photo whose plane overlaps the title column.
-    // Sample center + corners so large frames can't peek under the copy.
-    if (dist > 20) {
+    // Overview only: hide a photo if its frame overlaps the small title block.
+    if (dist > 24) {
       camRight.current.setFromMatrixColumn(camera.matrixWorld, 0).normalize();
       camUp.current.setFromMatrixColumn(camera.matrixWorld, 1).normalize();
-      const hw = (w * scale * 0.55);
-      const hh = (h * scale * 0.55);
+      // Modest inset — don't treat distant oversized projections as huge hit areas
+      const hw = w * scale * 0.35;
+      const hh = h * scale * 0.35;
       const offsets: [number, number][] = [
         [0, 0],
         [hw, hh],
         [hw, -hh],
         [-hw, hh],
         [-hw, -hh],
-        [hw, 0],
-        [-hw, 0],
-        [0, hh],
-        [0, -hh],
       ];
 
       let hitsZone = false;
@@ -115,8 +111,8 @@ function PhotoNode({
       }
 
       if (hitsZone) {
-        const overview = THREE.MathUtils.clamp((dist - 20) / 16, 0, 1);
-        opacity = 1 - overview; // fully clear once fully in overview
+        const overview = THREE.MathUtils.clamp((dist - 24) / 18, 0, 1);
+        opacity = 1 - overview;
       }
     }
 
