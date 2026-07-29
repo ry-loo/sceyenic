@@ -37,14 +37,14 @@ export function buildPhotoGraph(): { nodes: GraphNode[]; links: GraphLink[] } {
   const nodes: GraphNode[] = [];
   const links: GraphLink[] = [];
 
-  const clusterRadius = 36;
+  const clusterRadius = 22;
   const categoryCount = categories.length;
 
   categories.forEach((category, cIndex) => {
     const angle = (cIndex / categoryCount) * Math.PI * 2;
     const cx = Math.cos(angle) * clusterRadius;
     const cz = Math.sin(angle) * clusterRadius;
-    const cy = (hash(cIndex + 3) - 0.5) * 20;
+    const cy = (hash(cIndex + 3) - 0.5) * 12;
 
     const ids: string[] = [];
 
@@ -54,16 +54,23 @@ export function buildPhotoGraph(): { nodes: GraphNode[]; links: GraphLink[] } {
 
       const a = hash(cIndex * 80 + iIndex) * Math.PI * 2;
       const b = hash(cIndex * 80 + iIndex + 17) * Math.PI;
-      const r = 5 + hash(cIndex * 80 + iIndex + 29) * 14;
+      // Spread farther from each hub so clusters reach toward the center
+      const r = 7 + hash(cIndex * 80 + iIndex + 29) * 16;
+
+      // Slight pull toward origin so the core isn't hollow
+      const localX = Math.sin(b) * Math.cos(a) * r;
+      const localY = Math.cos(b) * r * 0.7;
+      const localZ = Math.sin(b) * Math.sin(a) * r;
+      const inward = 0.22;
 
       nodes.push({
         id,
         category: category.slug,
         categoryTitle: category.title,
         image,
-        x: cx + Math.sin(b) * Math.cos(a) * r,
-        y: cy + Math.cos(b) * r * 0.75,
-        z: cz + Math.sin(b) * Math.sin(a) * r,
+        x: cx * (1 - inward) + localX,
+        y: cy * (1 - inward) + localY,
+        z: cz * (1 - inward) + localZ,
       });
     });
 
