@@ -19,6 +19,7 @@ import type { OrbitControls as OrbitControlsImpl } from "three-stdlib";
 import {
   buildPhotoGraph,
   getCategoryColor,
+  getLandingCamera,
   getLandingNode,
   LANDING_CAMERA_OFFSET,
   LANDING_LOOK_BIAS,
@@ -248,6 +249,7 @@ function TextureCache({ urls }: { urls: string[] }) {
 
 export function PhotoGraph() {
   const { nodes, links } = useMemo(() => buildPhotoGraph(), []);
+  const landingCamera = useMemo(() => getLandingCamera(nodes), [nodes]);
   const urls = useMemo(() => nodes.map((n) => n.image.src), [nodes]);
   const [hover, setHover] = useState<HoverInfo | null>(null);
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
@@ -278,7 +280,12 @@ export function PhotoGraph() {
   return (
     <div className="relative h-dvh w-full overflow-hidden bg-transparent">
       <Canvas
-        camera={{ position: [0, 10, 55], fov: 48, near: 0.1, far: 300 }}
+        camera={{
+          position: landingCamera.position,
+          fov: 48,
+          near: 0.1,
+          far: 300,
+        }}
         dpr={[1, 1.75]}
         gl={{ antialias: true, alpha: true, premultipliedAlpha: false }}
         onCreated={({ gl }) => {
