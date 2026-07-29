@@ -5,6 +5,7 @@ import {
   useRef,
   useState,
   useCallback,
+  useEffect,
   type MutableRefObject,
 } from "react";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
@@ -147,6 +148,9 @@ function EdgeLines({
   );
 }
 
+const MAX_DISTANCE = 95;
+const PASSTHROUGH_THRESHOLD = 88;
+
 function Scene({
   nodes,
   links,
@@ -154,6 +158,7 @@ function Scene({
   onHover,
   onSelect,
   focusRef,
+  cameraDistRef,
 }: {
   nodes: GraphNode[];
   links: { source: string; target: string }[];
@@ -161,9 +166,18 @@ function Scene({
   onHover: (node: GraphNode | null, event?: PointerEvent) => void;
   onSelect: (node: GraphNode) => void;
   focusRef: MutableRefObject<GraphNode | null>;
+  cameraDistRef: MutableRefObject<number>;
 }) {
   const controls = useRef<OrbitControlsImpl>(null);
   const { camera } = useThree();
+
+  useFrame(() => {
+    if (controls.current) {
+      cameraDistRef.current = camera.position.distanceTo(
+        controls.current.target,
+      );
+    }
+  });
 
   useFrame((_, delta) => {
     const target = focusRef.current;
@@ -211,7 +225,7 @@ function Scene({
         enableDamping
         dampingFactor={0.06}
         minDistance={3}
-        maxDistance={95}
+        maxDistance={MAX_DISTANCE}
         zoomSpeed={1.15}
         rotateSpeed={0.55}
         panSpeed={0.75}
@@ -231,6 +245,21 @@ export function PhotoGraph() {
   const [hover, setHover] = useState<HoverInfo | null>(null);
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
   const focusRef = useRef<GraphNode | null>(null);
+  const cameraDistRef = useRef(0);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+    const onWheel = (e: WheelEvent) => {
+      if (e.deltaY > 0 && cameraDistRef.current >= PASSTHROUGH_THRESHOLD) {
+        e.stopPropagation();
+        window.scrollBy({ top: e.deltaY, behavior: "auto" });
+      }
+    };
+    el.addEventListener("wheel", onWheel, { passive: false });
+    return () => el.removeEventListener("wheel", onWheel);
+  }, []);
 
   const images: PortfolioImage[] = useMemo(
     () => nodes.map((n) => n.image),
@@ -255,7 +284,7 @@ export function PhotoGraph() {
   );
 
   return (
-    <div className="relative h-dvh w-full overflow-hidden bg-transparent">
+    <div ref={containerRef} className="relative h-dvh w-full overflow-hidden bg-transparent">
       <Canvas
         camera={{ position: [-50, 36, -36], fov: 48, near: 0.1, far: 300 }}
         dpr={[1, 1.75]}
@@ -273,6 +302,7 @@ export function PhotoGraph() {
           onHover={onHover}
           onSelect={onSelect}
           focusRef={focusRef}
+          cameraDistRef={cameraDistRef}
         />
       </Canvas>
 
