@@ -38,63 +38,17 @@ body {
   font-family: var(--font-brand), ui-sans-serif, system-ui, sans-serif;
 }
 
-/* Film light leaks — real plates, screen-blended on pure black */
+/* Film light leaks — canvas additive glow on pure black */
 .film-leaks {
   mix-blend-mode: screen;
+  width: 100%;
+  height: 100%;
 }
 
-.leak-img {
-  position: absolute;
-  max-width: none;
-  pointer-events: none;
-  opacity: 0;
-  will-change: opacity, transform;
-  user-select: none;
-}
-
-/* Diagonal streak (orange → teal) */
-.leak-diagonal {
-  left: -8%;
-  bottom: -5%;
-  width: 118%;
-  height: auto;
-  object-fit: cover;
-}
-
-/* Soft burnt-orange blobs */
-.leak-blobs {
-  inset: -5%;
-  width: 110%;
-  height: 110%;
-  object-fit: cover;
-}
-
-/* Lens flare / sunburst */
-.leak-flare {
-  top: -12%;
-  left: -18%;
-  width: 85%;
-  height: auto;
-  object-fit: contain;
-}
-
-/* Edge burns / film bands */
-.leak-edges {
-  inset: -8%;
-  width: 116%;
-  height: 116%;
-  object-fit: cover;
-}
-
-.film-leak {
-  position: absolute;
-  inset: -20%;
-  opacity: 0;
-  transform: translate(var(--leak-x, 0), var(--leak-y, 0))
-    rotate(var(--leak-rot, 0deg));
-  filter: blur(28px) saturate(1.1);
-  will-change: opacity, transform;
-  transition: transform 2.8s ease;
+@media (prefers-reduced-motion: reduce) {
+  .film-leaks {
+    opacity: 0.15;
+  }
 }
 
 @keyframes fade-up {
@@ -177,12 +131,7 @@ body {
     transform: none;
   }
 
-  .leak-img {
+  .film-leaks {
     opacity: 0.12 !important;
-    transform: none !important;
-  }
-
-  .film-leak {
-    opacity: 0 !important;
   }
 }
