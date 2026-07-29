@@ -19,8 +19,6 @@ import type { OrbitControls as OrbitControlsImpl } from "three-stdlib";
 import {
   buildPhotoGraph,
   getCategoryColor,
-  getLandingCamera,
-  getLandingNode,
   LANDING_CAMERA_OFFSET,
   LANDING_LOOK_BIAS,
   type GraphNode,
@@ -166,26 +164,6 @@ function Scene({
 }) {
   const controls = useRef<OrbitControlsImpl>(null);
   const { camera } = useThree();
-  const framedLanding = useRef(false);
-  const landing = useMemo(() => getLandingNode(nodes), [nodes]);
-
-  // Frame the labeled landing photo on first load
-  useFrame(() => {
-    if (framedLanding.current || !landing || !controls.current) return;
-    const look = new THREE.Vector3(
-      landing.x + LANDING_LOOK_BIAS.x,
-      landing.y + LANDING_LOOK_BIAS.y,
-      landing.z + LANDING_LOOK_BIAS.z,
-    );
-    camera.position.set(
-      landing.x + LANDING_CAMERA_OFFSET.x,
-      landing.y + LANDING_CAMERA_OFFSET.y,
-      landing.z + LANDING_CAMERA_OFFSET.z,
-    );
-    controls.current.target.copy(look);
-    controls.current.update();
-    framedLanding.current = true;
-  });
 
   useFrame((_, delta) => {
     const target = focusRef.current;
@@ -249,7 +227,6 @@ function TextureCache({ urls }: { urls: string[] }) {
 
 export function PhotoGraph() {
   const { nodes, links } = useMemo(() => buildPhotoGraph(), []);
-  const landingCamera = useMemo(() => getLandingCamera(nodes), [nodes]);
   const urls = useMemo(() => nodes.map((n) => n.image.src), [nodes]);
   const [hover, setHover] = useState<HoverInfo | null>(null);
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
@@ -280,12 +257,7 @@ export function PhotoGraph() {
   return (
     <div className="relative h-dvh w-full overflow-hidden bg-transparent">
       <Canvas
-        camera={{
-          position: landingCamera.position,
-          fov: 48,
-          near: 0.1,
-          far: 300,
-        }}
+        camera={{ position: [-54, 16, -12], fov: 48, near: 0.1, far: 300 }}
         dpr={[1, 1.75]}
         gl={{ antialias: true, alpha: true, premultipliedAlpha: false }}
         onCreated={({ gl }) => {
