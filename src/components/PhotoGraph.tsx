@@ -163,7 +163,7 @@ function Scene({
 
   return (
     <>
-      <fog attach="fog" args={["#050505", 55, 140]} />
+      <fog attach="fog" args={["#050505", 70, 160]} />
       <ambientLight intensity={0.7} />
       <Stars
         radius={120}
@@ -238,7 +238,10 @@ export function PhotoGraph() {
       <Canvas
         camera={{ position: [0, 10, 55], fov: 48, near: 0.1, far: 300 }}
         dpr={[1, 1.75]}
-        gl={{ antialias: true, alpha: true }}
+        gl={{ antialias: true, alpha: true, premultipliedAlpha: false }}
+        onCreated={({ gl }) => {
+          gl.setClearColor(0x000000, 0);
+        }}
         onPointerMissed={() => setHover(null)}
       >
         <TextureCache urls={urls} />

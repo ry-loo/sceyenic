@@ -32,7 +32,7 @@ export function SiteShell({ children }: { children: React.ReactNode }) {
     <div className="relative min-h-dvh bg-black text-[#f5f5f7]">
       <AmbientLightLeaks />
 
-      <header className="fixed inset-x-0 top-0 z-50 border-b border-white/5 bg-black/40 backdrop-blur-xl">
+      <header className="fixed inset-x-0 top-0 z-50 border-b border-white/5 bg-black/35 backdrop-blur-xl">
         <div className="mx-auto flex h-12 max-w-[1400px] items-center justify-between px-5 sm:h-14 sm:px-8 lg:px-10">
           <Link
             href="/"
