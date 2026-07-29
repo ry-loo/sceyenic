@@ -45,7 +45,7 @@ function PhotoNode({
   texture.colorSpace = THREE.SRGBColorSpace;
 
   const aspect = node.image.width / Math.max(node.image.height, 1);
-  const base = 3.2;
+  const base = 2.4;
   const w = aspect >= 1 ? base : base * aspect;
   const h = aspect >= 1 ? base / aspect : base;
   const scale = highlighted ? 1.35 : 1;
