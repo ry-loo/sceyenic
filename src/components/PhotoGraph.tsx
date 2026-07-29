@@ -124,9 +124,9 @@ function EdgeLines({
   return (
     <lineSegments geometry={geom}>
       <lineBasicMaterial
-        color="#7a7a88"
+        color="#e8e2d8"
         transparent
-        opacity={0.3}
+        opacity={0.55}
         depthWrite={false}
       />
     </lineSegments>
