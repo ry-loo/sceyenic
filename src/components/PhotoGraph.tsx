@@ -87,16 +87,16 @@ function PhotoNode({
 
     let opacity = 1;
 
-    // Keep hero title clear — hide photos that sit under the text
+    // Only soft-clear the title column at overview distances.
+    // When zoomed in, never force photos transparent.
     ndcPos.current.copy(worldPos.current).project(camera);
-    if (ndcPos.current.z < 1) {
+    if (ndcPos.current.z < 1 && dist > 22) {
       const sx = ndcPos.current.x * 0.5 + 0.5;
       const sy = 1 - (ndcPos.current.y * 0.5 + 0.5);
-      const pad = dist < 26 ? 0.1 : dist < 40 ? 0.05 : 0.02;
-      const cover = textSafeZoneFactor(sx, sy, pad);
-      // Hide any photo under the title column, including a too-close landing crop
-      const visibleSize = dist < 75 ? 1 : 0;
-      opacity *= 1 - cover * visibleSize;
+      const cover = textSafeZoneFactor(sx, sy, 0.03);
+      // Ease out as you approach — fully off once close
+      const overview = THREE.MathUtils.clamp((dist - 22) / 28, 0, 1);
+      opacity *= 1 - cover * overview;
     }
 
     const show = opacity > 0.05;
