@@ -22,9 +22,6 @@ export const LANDING_CAMERA_OFFSET = { x: 0, y: 0.55, z: 10.2 } as const;
 /** Look directly at the landing node. */
 export const LANDING_LOOK_BIAS = { x: 0, y: 0, z: 0 } as const;
 
-/** Node whose layout position defines the entry camera angle (street photograph 4). */
-const LANDING_ANCHOR_ID = "street-3";
-
 const CATEGORY_COLORS: Record<string, string> = {
   street: "#ff4d6d",
   photojournalism: "#ff8fab",
@@ -35,44 +32,6 @@ const CATEGORY_COLORS: Record<string, string> = {
 
 export function getCategoryColor(slug: string) {
   return CATEGORY_COLORS[slug] ?? "#ff6b8a";
-}
-
-export function getLandingNode(nodes: GraphNode[]): GraphNode | undefined {
-  return nodes.find((n) => n.isLanding) ?? nodes[0];
-}
-
-export function getLandingCamera(nodes: GraphNode[]) {
-  const landing = getLandingNode(nodes);
-  if (!landing) {
-    return {
-      position: [0, 10, 55] as [number, number, number],
-      target: [0, 0, 0] as [number, number, number],
-    };
-  }
-  return {
-    position: [
-      landing.x + LANDING_CAMERA_OFFSET.x,
-      landing.y + LANDING_CAMERA_OFFSET.y,
-      landing.z + LANDING_CAMERA_OFFSET.z,
-    ] as [number, number, number],
-    target: [
-      landing.x + LANDING_LOOK_BIAS.x,
-      landing.y + LANDING_LOOK_BIAS.y,
-      landing.z + LANDING_LOOK_BIAS.z,
-    ] as [number, number, number],
-  };
-}
-
-function swapNodePositions(a: GraphNode, b: GraphNode) {
-  const tx = a.x;
-  const ty = a.y;
-  const tz = a.z;
-  a.x = b.x;
-  a.y = b.y;
-  a.z = b.z;
-  b.x = tx;
-  b.y = ty;
-  b.z = tz;
 }
 
 /** Deterministic pseudo-random from string */
@@ -157,13 +116,5 @@ export function buildPhotoGraph(): { nodes: GraphNode[]; links: GraphLink[] } {
       links.push({ source: nodes[i].id, target: nodes[k].id });
     }
   }
-
-  // Place the landing photo at the anchor that defines the entry camera angle
-  const landing = nodes.find((n) => n.isLanding);
-  const anchor = nodes.find((n) => n.id === LANDING_ANCHOR_ID);
-  if (landing && anchor && landing.id !== anchor.id) {
-    swapNodePositions(landing, anchor);
-  }
-
   return { nodes, links };
 }
