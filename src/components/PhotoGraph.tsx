@@ -21,6 +21,7 @@ import {
   getCategoryColor,
   getLandingNode,
   LANDING_CAMERA_OFFSET,
+  LANDING_LOOK_BIAS,
   type GraphNode,
 } from "@/data/graph";
 import { Lightbox } from "@/components/Lightbox";
@@ -31,6 +32,21 @@ type HoverInfo = {
   x: number;
   y: number;
 };
+
+/** Screen region reserved for the hero title + instructions (normalized 0–1, y from top). */
+function textSafeZoneFactor(sx: number, sy: number, pad = 0) {
+  const left = 0;
+  const right = 0.52 + pad;
+  const top = 0.08;
+  const bottom = 0.5 + pad * 0.5;
+  if (sx < left || sx > right || sy < top || sy > bottom) return 0;
+
+  const nx = (sx - left) / (right - left);
+  const ny = (sy - top) / (bottom - top);
+  const edge = Math.min(nx, 1 - nx, ny, 1 - ny);
+  const strength = 1 - Math.min(1, edge / 0.22);
+  return THREE.MathUtils.clamp(strength, 0, 1);
+}
 
 function PhotoNode({
   node,
@@ -50,8 +66,10 @@ function PhotoNode({
   const photoMatRef = useRef<THREE.MeshBasicMaterial>(null);
   const glowMatRef = useRef<THREE.MeshBasicMaterial>(null);
   const coreMatRef = useRef<THREE.MeshBasicMaterial>(null);
+  const photoMeshRef = useRef<THREE.Mesh>(null);
   const worldPos = useRef(new THREE.Vector3());
-  const { camera } = useThree();
+  const ndcPos = useRef(new THREE.Vector3());
+  const { camera, size } = useThree();
 
   const aspect = node.image.width / Math.max(node.image.height, 1);
   const base = 2.4;
@@ -64,17 +82,40 @@ function PhotoNode({
     if (!groupRef.current || !photoMatRef.current) return;
     groupRef.current.getWorldPosition(worldPos.current);
     const dist = camera.position.distanceTo(worldPos.current);
-    // Very slight haze: clear up close, gently softens with distance
+
+    // Depth haze
     const t = THREE.MathUtils.clamp((dist - 24) / 60, 0, 1);
     const haze = t * t;
-    photoMatRef.current.opacity = highlighted ? 1 : 1 - haze * 0.22;
+    let opacity = highlighted ? 1 : 1 - haze * 0.22;
+
+    // Keep hero title clear — hide photos that sit under the text
+    ndcPos.current.copy(worldPos.current).project(camera);
+    if (ndcPos.current.z < 1) {
+      const sx = ndcPos.current.x * 0.5 + 0.5;
+      const sy = 1 - (ndcPos.current.y * 0.5 + 0.5);
+      const pad = dist < 26 ? 0.14 : dist < 40 ? 0.08 : 0.02;
+      const cover = textSafeZoneFactor(sx, sy, pad);
+      const visibleSize = dist < 75 ? 1 : 0;
+      opacity *= 1 - cover * visibleSize;
+    }
+
+    const show = opacity > 0.05;
+    photoMatRef.current.opacity = opacity;
+    photoMatRef.current.visible = show;
+    if (photoMeshRef.current) {
+      photoMeshRef.current.visible = show;
+    }
     if (glowMatRef.current) {
       glowMatRef.current.opacity =
-        (highlighted ? 0.5 : 0.16) * (1 - haze * 0.35);
+        (highlighted ? 0.5 : 0.16) * (1 - haze * 0.35) * (show ? 1 : 0);
+      glowMatRef.current.visible = show;
     }
     if (coreMatRef.current) {
-      coreMatRef.current.opacity = 0.85 * (1 - haze * 0.4);
+      coreMatRef.current.opacity = 0.85 * (1 - haze * 0.4) * (show ? 1 : 0);
+      coreMatRef.current.visible = show;
     }
+
+    void size.width;
   });
 
   return (
@@ -92,6 +133,7 @@ function PhotoNode({
           />
         </mesh>
         <mesh
+          ref={photoMeshRef}
           scale={[scale, scale, 1]}
           onPointerOver={(e) => {
             e.stopPropagation();
@@ -196,16 +238,20 @@ function Scene({
   const framedLanding = useRef(false);
   const landing = useMemo(() => getLandingNode(nodes), [nodes]);
 
-  // Frame the labeled landing photo on first load
+  // Frame the labeled landing photo on first load — photo mid-right, left clear for title
   useFrame(() => {
     if (framedLanding.current || !landing || !controls.current) return;
-    const goal = new THREE.Vector3(landing.x, landing.y, landing.z);
-    camera.position.set(
-      goal.x + LANDING_CAMERA_OFFSET.x,
-      goal.y + LANDING_CAMERA_OFFSET.y,
-      goal.z + LANDING_CAMERA_OFFSET.z,
+    const look = new THREE.Vector3(
+      landing.x + LANDING_LOOK_BIAS.x,
+      landing.y + LANDING_LOOK_BIAS.y,
+      landing.z + LANDING_LOOK_BIAS.z,
     );
-    controls.current.target.copy(goal);
+    camera.position.set(
+      landing.x + LANDING_CAMERA_OFFSET.x,
+      landing.y + LANDING_CAMERA_OFFSET.y,
+      landing.z + LANDING_CAMERA_OFFSET.z,
+    );
+    controls.current.target.copy(look);
     controls.current.update();
     framedLanding.current = true;
   });
@@ -213,18 +259,18 @@ function Scene({
   useFrame((_, delta) => {
     const target = focusRef.current;
     if (!target || !controls.current) return;
-    const goal = new THREE.Vector3(target.x, target.y, target.z);
-    const desiredCam = goal
-      .clone()
-      .add(
-        new THREE.Vector3(
-          LANDING_CAMERA_OFFSET.x,
-          LANDING_CAMERA_OFFSET.y,
-          LANDING_CAMERA_OFFSET.z,
-        ),
-      );
+    const look = new THREE.Vector3(
+      target.x + LANDING_LOOK_BIAS.x * 0.35,
+      target.y + LANDING_LOOK_BIAS.y * 0.35,
+      target.z + LANDING_LOOK_BIAS.z * 0.35,
+    );
+    const desiredCam = new THREE.Vector3(
+      target.x + LANDING_CAMERA_OFFSET.x * 0.85,
+      target.y + LANDING_CAMERA_OFFSET.y * 0.85,
+      target.z + LANDING_CAMERA_OFFSET.z * 0.85,
+    );
     camera.position.lerp(desiredCam, 1 - Math.exp(-2.4 * delta));
-    controls.current.target.lerp(goal, 1 - Math.exp(-2.4 * delta));
+    controls.current.target.lerp(look, 1 - Math.exp(-2.4 * delta));
     controls.current.update();
   });
 
@@ -325,6 +371,7 @@ export function PhotoGraph() {
 
       <div className="pointer-events-none absolute inset-0 z-10">
         <div className="absolute top-20 left-5 max-w-md sm:top-24 sm:left-10">
+          <div className="pointer-events-none absolute -inset-6 -z-10 rounded-3xl bg-black/35 blur-2xl" />
           <h1 className="font-display text-[clamp(2.75rem,9vw,5.75rem)] leading-[0.9] font-semibold tracking-[-0.05em] text-white">
             sceyenic
           </h1>

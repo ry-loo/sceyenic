@@ -17,8 +17,10 @@ export type GraphLink = {
   target: string;
 };
 
-/** Camera offset from the landing photo on first load (world units). */
-export const LANDING_CAMERA_OFFSET = { x: 2.4, y: 1.35, z: 9.8 } as const;
+/** Camera framing for the labeled landing photo (photo sits mid-right; left stays clear for title). */
+export const LANDING_CAMERA_OFFSET = { x: -7.5, y: 2.1, z: 13.5 } as const;
+/** Look-at bias left of the landing photo so title text isn't over the image. */
+export const LANDING_LOOK_BIAS = { x: -4.2, y: 0.35, z: 0 } as const;
 
 const CATEGORY_COLORS: Record<string, string> = {
   street: "#ff4d6d",
