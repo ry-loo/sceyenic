@@ -25,7 +25,7 @@ export function PhotoGrid({ images }: PhotoGridProps) {
           <button
             key={`${image.src}-${index}`}
             type="button"
-            className="group relative aspect-[4/5] overflow-hidden rounded-[22px] bg-[#e8e8ed] text-left focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1d1d1f]"
+            className="group relative aspect-[4/5] overflow-hidden rounded-[22px] bg-white/5 text-left focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
             onClick={() => setActiveIndex(index)}
             aria-label={`View ${image.alt}`}
           >

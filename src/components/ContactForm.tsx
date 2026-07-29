@@ -18,12 +18,12 @@ export function ContactForm() {
   }
 
   const fieldClass =
-    "mt-2 w-full rounded-2xl border border-black/8 bg-[#f5f5f7] px-4 py-3 text-[15px] text-[#1d1d1f] outline-none transition-shadow placeholder:text-[#86868b] focus:shadow-[0_0_0_4px_rgba(0,0,0,0.06)]";
+    "mt-2 w-full rounded-2xl border border-white/15 bg-black/40 px-4 py-3 text-[15px] text-white outline-none transition-shadow placeholder:text-white/35 focus:shadow-[0_0_0_4px_rgba(255,255,255,0.08)]";
 
   return (
     <form onSubmit={onSubmit} className="space-y-5">
       <label className="block">
-        <span className="text-[13px] font-medium text-[#1d1d1f]">Name</span>
+        <span className="text-[13px] font-medium text-white/80">Name</span>
         <input
           type="text"
           name="name"
@@ -34,7 +34,7 @@ export function ContactForm() {
         />
       </label>
       <label className="block">
-        <span className="text-[13px] font-medium text-[#1d1d1f]">Email</span>
+        <span className="text-[13px] font-medium text-white/80">Email</span>
         <input
           type="email"
           name="email"
@@ -45,7 +45,7 @@ export function ContactForm() {
         />
       </label>
       <label className="block">
-        <span className="text-[13px] font-medium text-[#1d1d1f]">Message</span>
+        <span className="text-[13px] font-medium text-white/80">Message</span>
         <textarea
           name="message"
           value={message}
@@ -57,7 +57,7 @@ export function ContactForm() {
       </label>
       <button
         type="submit"
-        className="mt-2 inline-flex rounded-full bg-[#1d1d1f] px-6 py-3 text-[14px] font-medium text-white transition-transform hover:scale-[1.02]"
+        className="mt-2 inline-flex rounded-full bg-white px-6 py-3 text-[14px] font-medium text-[#1d1d1f] transition-transform hover:scale-[1.02]"
       >
         Send message
       </button>

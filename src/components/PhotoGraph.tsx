@@ -8,7 +8,12 @@ import {
   type MutableRefObject,
 } from "react";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
-import { OrbitControls, Billboard, useTexture } from "@react-three/drei";
+import {
+  OrbitControls,
+  Billboard,
+  useTexture,
+  Stars,
+} from "@react-three/drei";
 import * as THREE from "three";
 import type { OrbitControls as OrbitControlsImpl } from "three-stdlib";
 import {
@@ -17,7 +22,6 @@ import {
   type GraphNode,
 } from "@/data/graph";
 import { Lightbox } from "@/components/Lightbox";
-import { SceneLightLeaks } from "@/components/SceneLightLeaks";
 import type { PortfolioImage } from "@/data/portfolio";
 
 type HoverInfo = {
@@ -41,21 +45,21 @@ function PhotoNode({
   texture.colorSpace = THREE.SRGBColorSpace;
 
   const aspect = node.image.width / Math.max(node.image.height, 1);
-  const base = 2.2;
+  const base = 2.4;
   const w = aspect >= 1 ? base : base * aspect;
   const h = aspect >= 1 ? base / aspect : base;
-  const scale = highlighted ? 1.4 : 1;
+  const scale = highlighted ? 1.35 : 1;
   const glow = getCategoryColor(node.category);
 
   return (
     <group position={[node.x, node.y, node.z]}>
       <Billboard follow>
-        <mesh scale={[scale * 1.08, scale * 1.08, 1]} position={[0, 0, -0.03]}>
-          <planeGeometry args={[w + 0.28, h + 0.28]} />
+        <mesh scale={[scale * 1.1, scale * 1.1, 1]} position={[0, 0, -0.03]}>
+          <planeGeometry args={[w + 0.4, h + 0.4]} />
           <meshBasicMaterial
             color={glow}
             transparent
-            opacity={highlighted ? 0.45 : 0.12}
+            opacity={highlighted ? 0.5 : 0.16}
             depthWrite={false}
           />
         </mesh>
@@ -85,8 +89,8 @@ function PhotoNode({
         </mesh>
       </Billboard>
       <mesh>
-        <sphereGeometry args={[0.08, 10, 10]} />
-        <meshBasicMaterial color={glow} transparent opacity={0.75} />
+        <sphereGeometry args={[0.1, 12, 12]} />
+        <meshBasicMaterial color={glow} transparent opacity={0.85} />
       </mesh>
     </group>
   );
@@ -120,9 +124,9 @@ function EdgeLines({
   return (
     <lineSegments geometry={geom}>
       <lineBasicMaterial
-        color="#5c5c66"
+        color="#7a7a88"
         transparent
-        opacity={0.32}
+        opacity={0.3}
         depthWrite={false}
       />
     </lineSegments>
@@ -151,7 +155,7 @@ function Scene({
     const target = focusRef.current;
     if (!target || !controls.current) return;
     const goal = new THREE.Vector3(target.x, target.y, target.z);
-    const desiredCam = goal.clone().add(new THREE.Vector3(0, 0.8, 7));
+    const desiredCam = goal.clone().add(new THREE.Vector3(0, 1.2, 8));
     camera.position.lerp(desiredCam, 1 - Math.exp(-2.4 * delta));
     controls.current.target.lerp(goal, 1 - Math.exp(-2.4 * delta));
     controls.current.update();
@@ -159,9 +163,17 @@ function Scene({
 
   return (
     <>
-      <color attach="background" args={["#000000"]} />
-      <ambientLight intensity={0.75} />
-      <SceneLightLeaks />
+      <fog attach="fog" args={["#050505", 55, 140]} />
+      <ambientLight intensity={0.7} />
+      <Stars
+        radius={120}
+        depth={50}
+        count={900}
+        factor={2.4}
+        saturation={0}
+        fade
+        speed={0.2}
+      />
       <EdgeLines nodes={nodes} links={links} />
       {nodes.map((node) => (
         <PhotoNode
@@ -222,11 +234,11 @@ export function PhotoGraph() {
   );
 
   return (
-    <div className="relative h-dvh w-full overflow-hidden bg-black">
+    <div className="relative h-dvh w-full overflow-hidden bg-transparent">
       <Canvas
         camera={{ position: [0, 10, 55], fov: 48, near: 0.1, far: 300 }}
         dpr={[1, 1.75]}
-        gl={{ antialias: true, alpha: false }}
+        gl={{ antialias: true, alpha: true }}
         onPointerMissed={() => setHover(null)}
       >
         <TextureCache urls={urls} />
@@ -263,14 +275,8 @@ export function PhotoGraph() {
         <div
           className="pointer-events-none fixed z-20 rounded-md border border-white/10 bg-black/85 px-3 py-2 shadow-lg backdrop-blur-md"
           style={{
-            left: Math.min(
-              hover.x + 14,
-              (typeof window !== "undefined" ? window.innerWidth : 800) - 190,
-            ),
-            top: Math.min(
-              hover.y + 14,
-              (typeof window !== "undefined" ? window.innerHeight : 600) - 72,
-            ),
+            left: Math.min(hover.x + 14, (typeof window !== "undefined" ? window.innerWidth : 800) - 190),
+            top: Math.min(hover.y + 14, (typeof window !== "undefined" ? window.innerHeight : 600) - 72),
           }}
         >
           <p className="text-[12px] font-medium text-white">

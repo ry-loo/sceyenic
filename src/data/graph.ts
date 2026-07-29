@@ -27,6 +27,7 @@ export function getCategoryColor(slug: string) {
   return CATEGORY_COLORS[slug] ?? "#ff6b8a";
 }
 
+/** Deterministic pseudo-random from string */
 function hash(n: number) {
   const x = Math.sin(n * 127.1 + 311.7) * 43758.5453;
   return x - Math.floor(x);
@@ -66,6 +67,7 @@ export function buildPhotoGraph(): { nodes: GraphNode[]; links: GraphLink[] } {
       });
     });
 
+    // Dense web within category
     for (let i = 0; i < ids.length; i++) {
       links.push({ source: ids[i], target: ids[(i + 1) % ids.length] });
       links.push({ source: ids[i], target: ids[(i + 2) % ids.length] });
@@ -74,6 +76,7 @@ export function buildPhotoGraph(): { nodes: GraphNode[]; links: GraphLink[] } {
       }
     }
 
+    // Bridge to neighboring categories
     const next = categories[(cIndex + 1) % categoryCount];
     const mid = Math.floor(ids.length / 2);
     if (ids[0]) {
@@ -87,6 +90,7 @@ export function buildPhotoGraph(): { nodes: GraphNode[]; links: GraphLink[] } {
     }
   });
 
+  // Longer cross-category strands
   for (let i = 0; i < nodes.length; i += 3) {
     const j = (i + 11) % nodes.length;
     const k = (i + 19) % nodes.length;
