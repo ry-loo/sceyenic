@@ -1,84 +1,118 @@
+import Image from "next/image";
 import Link from "next/link";
-import { TornPhoto } from "@/components/TornPhoto";
 import { categories, site } from "@/data/portfolio";
 
 export default function HomePage() {
+  const hero = categories[0]?.images[0];
+
   return (
     <>
-      {/* Album cover */}
-      <section className="relative flex min-h-dvh items-center justify-center overflow-hidden bg-[#141210] px-5">
-        <div
-          className="pointer-events-none absolute inset-0 opacity-40"
-          style={{
-            backgroundImage:
-              "radial-gradient(ellipse at 50% 40%, rgba(90,70,40,0.35), transparent 55%), linear-gradient(180deg, #1a1713, #0e0c0a)",
-          }}
-        />
-        <div className="relative z-10 w-full max-w-xl text-center">
-          <p className="animate-fade-up font-caption text-[11px] tracking-[0.35em] text-[#8a7f6c] uppercase">
-            Photo album
-          </p>
-          <h1 className="animate-fade-up mt-6 font-display text-[clamp(2.75rem,10vw,5.5rem)] leading-none tracking-[0.12em] text-[#e8e2d4] uppercase">
+      <section className="relative flex min-h-dvh items-end overflow-hidden bg-[#000]">
+        {hero && (
+          <Image
+            src={hero.src}
+            alt=""
+            fill
+            priority
+            className="animate-hero-image object-cover opacity-70"
+            sizes="100vw"
+          />
+        )}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/25 to-black/20" />
+
+        <div className="relative z-10 mx-auto w-full max-w-[1400px] px-5 pb-16 pt-32 sm:px-8 sm:pb-20 lg:px-10 lg:pb-24">
+          <h1 className="animate-fade-up font-display text-[clamp(3.5rem,12vw,8rem)] leading-[0.9] font-semibold tracking-[-0.05em] text-white">
             {site.name}
           </h1>
           <p
-            className="animate-fade-up mx-auto mt-6 max-w-sm text-[14px] leading-relaxed text-[#9a9080]"
-            style={{ animationDelay: "100ms" }}
+            className="animate-fade-up mt-5 max-w-md text-[17px] leading-relaxed font-light text-white/75 sm:text-[19px]"
+            style={{ animationDelay: "120ms" }}
           >
-            Prints, torn edges, and pages you can almost turn.
+            Photography with clarity, timing, and quiet precision.
           </p>
-          <Link
-            href="#album"
-            className="animate-fade-up mt-10 inline-block border border-[#6a6050] px-5 py-2.5 font-caption text-[11px] tracking-[0.2em] text-[#d4cbb8] uppercase transition-colors hover:border-[#d4cbb8] hover:text-[#e8e2d4]"
-            style={{ animationDelay: "180ms" }}
+          <div
+            className="animate-fade-up mt-8 flex flex-wrap items-center gap-4"
+            style={{ animationDelay: "220ms" }}
           >
-            Open album
-          </Link>
+            <Link
+              href="#work"
+              className="rounded-full bg-white px-5 py-2.5 text-[14px] font-medium text-[#1d1d1f] transition-transform hover:scale-[1.02]"
+            >
+              View work
+            </Link>
+            <Link
+              href="/contact"
+              className="rounded-full border border-white/35 px-5 py-2.5 text-[14px] font-medium text-white transition-colors hover:bg-white/10"
+            >
+              Get in touch
+            </Link>
+          </div>
         </div>
       </section>
 
-      {/* Open album spread */}
-      <section id="album" className="scroll-mt-14 px-3 py-10 sm:px-6 sm:py-16 lg:px-10">
-        <div className="album-page album-spine relative mx-auto max-w-[1180px] overflow-hidden rounded-sm px-5 py-10 sm:px-10 sm:py-14 lg:px-14">
-          <div className="mb-10 flex flex-col gap-2 sm:mb-14 sm:flex-row sm:items-end sm:justify-between">
-            <div>
-              <p className="font-caption text-[10px] tracking-[0.2em] text-[var(--muted)] uppercase">
-                Contents
-              </p>
-              <h2 className="mt-2 text-2xl tracking-wide text-[var(--ink)] sm:text-3xl">
-                Five chapters
-              </h2>
-            </div>
-            <p className="max-w-xs font-caption text-[10px] leading-relaxed tracking-[0.06em] text-[var(--muted)]">
-              Each page holds a category — taped, tilted, a little worn.
+      <section id="work" className="scroll-mt-16 bg-[#f5f5f7] py-20 sm:py-28">
+        <div className="mx-auto max-w-[1400px] px-5 sm:px-8 lg:px-10">
+          <div className="mb-12 max-w-2xl sm:mb-16">
+            <p className="text-[12px] font-medium tracking-[0.16em] text-[#86868b] uppercase">
+              Selected work
             </p>
+            <h2 className="mt-3 font-display text-[clamp(2rem,5vw,3.5rem)] leading-[1.05] font-semibold tracking-[-0.04em] text-[#1d1d1f]">
+              Five disciplines. One standard.
+            </h2>
           </div>
 
-          <div className="animate-stagger grid grid-cols-1 gap-10 sm:grid-cols-2 lg:grid-cols-3 lg:gap-x-8 lg:gap-y-14">
+          <div className="animate-stagger grid gap-5 md:grid-cols-2 lg:gap-6">
             {categories.map((category, index) => {
               const cover = category.images[0];
-              if (!cover) return null;
+              const wide = index === 0 || index === 3;
               return (
                 <Link
                   key={category.slug}
                   href={`/work/${category.slug}`}
-                  className={`block ${index === 0 ? "sm:col-span-2 lg:col-span-1" : ""}`}
+                  className={`group relative overflow-hidden rounded-[28px] bg-[#e8e8ed] ${
+                    wide ? "md:col-span-2 min-h-[420px] lg:min-h-[520px]" : "min-h-[360px] lg:min-h-[440px]"
+                  }`}
                 >
-                  <TornPhoto
-                    image={cover}
-                    index={index}
-                    caption={category.title}
-                    sizes="(max-width: 640px) 90vw, (max-width: 1024px) 45vw, 30vw"
-                    priority={index < 2}
-                  />
+                  {cover && (
+                    <Image
+                      src={cover.src}
+                      alt={category.title}
+                      fill
+                      className="object-cover transition-transform duration-700 ease-out group-hover:scale-[1.03]"
+                      sizes={wide ? "100vw" : "50vw"}
+                    />
+                  )}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/15 to-transparent" />
+                  <div className="absolute inset-x-0 bottom-0 p-7 sm:p-9">
+                    <h3 className="font-display text-[28px] font-semibold tracking-[-0.03em] text-white sm:text-[34px]">
+                      {category.title}
+                    </h3>
+                    <p className="mt-2 max-w-md text-[15px] text-white/70">
+                      {category.description}
+                    </p>
+                  </div>
                 </Link>
               );
             })}
           </div>
+        </div>
+      </section>
 
-          <p className="mt-14 text-center font-caption text-[10px] tracking-[0.16em] text-[var(--muted)] uppercase">
-            — end of spread —
+      <section className="bg-white py-24 sm:py-32">
+        <div className="mx-auto max-w-[760px] px-5 text-center sm:px-8">
+          <h2 className="font-display text-[clamp(2rem,5vw,3.25rem)] leading-[1.05] font-semibold tracking-[-0.04em] text-[#1d1d1f]">
+            Ready when you are.
+          </h2>
+          <p className="mt-5 text-[17px] leading-relaxed text-[#86868b]">
+            Commissions, collaborations, and quiet conversations about what the
+            frame should hold.
           </p>
+          <Link
+            href="/contact"
+            className="mt-8 inline-flex rounded-full bg-[#1d1d1f] px-6 py-3 text-[14px] font-medium text-white transition-transform hover:scale-[1.02]"
+          >
+            Start a project
+          </Link>
         </div>
       </section>
     </>

@@ -1,25 +1,19 @@
 import type { Metadata } from "next";
-import { Special_Elite } from "next/font/google";
+import { Manrope } from "next/font/google";
 import { SiteShell } from "@/components/SiteShell";
 import { site } from "@/data/portfolio";
 import "./globals.css";
 
-const typewriter = Special_Elite({
+const brand = Manrope({
   variable: "--font-brand",
   subsets: ["latin"],
-  weight: "400",
+  weight: ["400", "500", "600", "700"],
 });
 
-const typewriterBody = Special_Elite({
+const body = Manrope({
   variable: "--font-body",
   subsets: ["latin"],
-  weight: "400",
-});
-
-const typewriterCaption = Special_Elite({
-  variable: "--font-caption",
-  subsets: ["latin"],
-  weight: "400",
+  weight: ["300", "400", "500", "600", "700"],
 });
 
 export const metadata: Metadata = {
@@ -28,7 +22,7 @@ export const metadata: Metadata = {
     template: `%s — ${site.name}`,
   },
   description:
-    "sceyenic photography portfolio — an analog album of street, photojournalism, graduation, headshots, and events.",
+    "sceyenic photography portfolio — street, photojournalism, graduation, headshots, and events.",
   icons: {
     icon: "/favicon.svg",
   },
@@ -42,7 +36,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${typewriter.variable} ${typewriterBody.variable} ${typewriterCaption.variable} h-full antialiased`}
+      className={`${brand.variable} ${body.variable} h-full antialiased`}
     >
       <body className="min-h-full">
         <SiteShell>{children}</SiteShell>

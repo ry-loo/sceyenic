@@ -22,14 +22,8 @@ npm run dev
 
 https://sceyenic.vercel.app
 
-## Saved aesthetics
-
-- **Apple / sleek:** branch `aesthetic/apple`, tag `apple-v1`
-  ```bash
-  git checkout aesthetic/apple
-  ```
-- **Analog album (current):** `main`
-
 ## Deploy
 
-Repo: https://github.com/ry-loo/sceyenic
+Repo: https://github.com/ry-loo/sceyenic  
+
+Already on Vercel free hobby. For auto-deploy on push, connect the GitHub repo in the Vercel project settings.

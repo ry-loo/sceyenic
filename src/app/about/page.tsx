@@ -9,28 +9,32 @@ export const metadata: Metadata = {
 
 export default function AboutPage() {
   return (
-    <div className="px-3 pt-20 pb-12 sm:px-6 sm:pt-24 sm:pb-16 lg:px-10">
-      <article className="album-page relative mx-auto max-w-[720px] overflow-hidden rounded-sm px-6 py-12 sm:px-12 sm:py-16">
-        <p className="font-caption text-[10px] tracking-[0.2em] text-[var(--muted)] uppercase">
-          Notes in the margin
+    <div className="bg-[#f5f5f7] pt-28 pb-24 sm:pt-36 sm:pb-32">
+      <article className="mx-auto max-w-[720px] px-5 sm:px-8">
+        <p className="text-[12px] font-medium tracking-[0.16em] text-[#86868b] uppercase">
+          About
         </p>
-        <h1 className="mt-4 text-3xl tracking-wide text-[var(--ink)] sm:text-4xl">
-          About {site.name}
+        <h1 className="mt-4 font-display text-[clamp(2.5rem,6vw,4rem)] leading-[1.05] font-semibold tracking-[-0.045em] text-[#1d1d1f]">
+          Quiet frames. Clear intent.
         </h1>
-        <div className="mt-8 space-y-5 text-[15px] leading-relaxed text-[#3a352c]">
+        <div className="mt-10 space-y-6 text-[17px] leading-relaxed font-light text-[#424245]">
           <p>
-            This site is meant to feel like a physical album — prints with torn
-            edges, tape, and a little grit. The work spans street,
-            photojournalism, graduation, headshots, and events.
+            {site.name} is a photography practice spanning street,
+            photojournalism, graduation, headshots, and events. The work favors
+            clarity, timing, and observation over spectacle.
           </p>
           <p>
-            Clarity and timing over spectacle. Listen first, then shoot with
-            intention.
+            Whether documenting a public moment or making a simple portrait, the
+            approach stays the same: listen first, then shoot with intention.
+          </p>
+          <p>
+            Available for commissions and collaborations, wherever the
+            assignment leads.
           </p>
         </div>
         <Link
           href="/contact"
-          className="mt-10 inline-block border border-[rgba(60,50,30,0.35)] px-4 py-2 font-caption text-[10px] tracking-[0.16em] text-[var(--ink)] uppercase transition-colors hover:bg-[var(--ink)] hover:text-[var(--paper)]"
+          className="mt-12 inline-flex rounded-full bg-[#1d1d1f] px-6 py-3 text-[14px] font-medium text-white transition-transform hover:scale-[1.02]"
         >
           Get in touch
         </Link>

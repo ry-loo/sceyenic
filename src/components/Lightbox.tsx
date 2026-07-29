@@ -40,7 +40,7 @@ export function Lightbox({ images, index, onClose, onChange }: LightboxProps) {
 
   return (
     <div
-      className="fixed inset-0 z-[60] flex items-center justify-center bg-black/90 animate-fade-in"
+      className="fixed inset-0 z-[60] flex items-center justify-center bg-black/92 animate-fade-in"
       role="dialog"
       aria-modal="true"
       aria-label="Image lightbox"
@@ -48,7 +48,7 @@ export function Lightbox({ images, index, onClose, onChange }: LightboxProps) {
     >
       <button
         type="button"
-        className="absolute top-5 right-5 z-10 font-caption text-[11px] tracking-[0.14em] text-white/70 uppercase hover:text-white"
+        className="absolute top-5 right-5 z-10 rounded-full bg-white/10 px-4 py-2 text-[13px] text-white/90 backdrop-blur-md transition-colors hover:bg-white/20"
         onClick={onClose}
         aria-label="Close lightbox"
       >
@@ -57,7 +57,7 @@ export function Lightbox({ images, index, onClose, onChange }: LightboxProps) {
 
       <button
         type="button"
-        className="absolute top-1/2 left-4 z-10 -translate-y-1/2 font-caption text-[11px] tracking-[0.14em] text-white/70 uppercase hover:text-white sm:left-8"
+        className="absolute top-1/2 left-4 z-10 -translate-y-1/2 rounded-full bg-white/10 px-4 py-2 text-[13px] text-white/90 backdrop-blur-md transition-colors hover:bg-white/20 sm:left-6"
         onClick={(e) => {
           e.stopPropagation();
           prev();
@@ -69,7 +69,7 @@ export function Lightbox({ images, index, onClose, onChange }: LightboxProps) {
 
       <button
         type="button"
-        className="absolute top-1/2 right-4 z-10 -translate-y-1/2 font-caption text-[11px] tracking-[0.14em] text-white/70 uppercase hover:text-white sm:right-8"
+        className="absolute top-1/2 right-4 z-10 -translate-y-1/2 rounded-full bg-white/10 px-4 py-2 text-[13px] text-white/90 backdrop-blur-md transition-colors hover:bg-white/20 sm:right-6"
         onClick={(e) => {
           e.stopPropagation();
           next();
@@ -80,27 +80,21 @@ export function Lightbox({ images, index, onClose, onChange }: LightboxProps) {
       </button>
 
       <div
-        className="relative mx-auto max-h-[88dvh] max-w-[min(90vw,720px)]"
+        className="relative mx-auto flex max-h-[88dvh] max-w-[90vw] items-center justify-center"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="torn-photo torn-v1" style={{ cursor: "default" }}>
-          <span className="torn-frame">
-            <span className="torn-print">
-              <Image
-                src={image.src}
-                alt={image.alt}
-                width={image.width}
-                height={image.height}
-                className="torn-img max-h-[75dvh] w-auto"
-                sizes="90vw"
-                priority
-              />
-            </span>
-          </span>
-        </div>
+        <Image
+          src={image.src}
+          alt={image.alt}
+          width={image.width}
+          height={image.height}
+          className="max-h-[88dvh] w-auto max-w-full rounded-lg object-contain"
+          sizes="90vw"
+          priority
+        />
       </div>
 
-      <p className="absolute bottom-6 left-1/2 -translate-x-1/2 font-caption text-[11px] tracking-[0.12em] text-white/45">
+      <p className="absolute bottom-6 left-1/2 -translate-x-1/2 text-[13px] text-white/45">
         {index + 1} / {images.length}
       </p>
     </div>
