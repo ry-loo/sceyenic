@@ -5,40 +5,36 @@ import Image from "next/image";
 import type { PortfolioImage } from "@/data/portfolio";
 import { Lightbox } from "./Lightbox";
 
-type MasonryGalleryProps = {
+type PhotoGridProps = {
   images: PortfolioImage[];
 };
 
-export function MasonryGallery({ images }: MasonryGalleryProps) {
+export function PhotoGrid({ images }: PhotoGridProps) {
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
 
   if (images.length === 0) {
     return (
-      <p className="font-mono text-xs tracking-[0.12em] text-[#888] uppercase">
-        No images yet
-      </p>
+      <p className="text-[15px] text-[#86868b]">No images yet.</p>
     );
   }
 
   return (
     <>
-      <div className="masonry columns-1 gap-6 sm:columns-2 xl:columns-3 2xl:columns-4">
+      <div className="animate-stagger grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3 lg:gap-5">
         {images.map((image, index) => (
           <button
             key={`${image.src}-${index}`}
             type="button"
-            className="masonry-item mb-6 block w-full break-inside-avoid overflow-hidden text-left focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#111]"
+            className="group relative aspect-[4/5] overflow-hidden rounded-[22px] bg-[#e8e8ed] text-left focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1d1d1f]"
             onClick={() => setActiveIndex(index)}
-            style={{ animationDelay: `${Math.min(index, 12) * 40}ms` }}
             aria-label={`View ${image.alt}`}
           >
             <Image
               src={image.src}
               alt={image.alt}
-              width={image.width}
-              height={image.height}
-              className="h-auto w-full object-cover transition-opacity duration-300 hover:opacity-85"
-              sizes="(max-width: 640px) 100vw, (max-width: 1280px) 50vw, (max-width: 1536px) 33vw, 25vw"
+              fill
+              className="object-cover transition-transform duration-700 ease-out group-hover:scale-[1.03]"
+              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
             />
           </button>
         ))}

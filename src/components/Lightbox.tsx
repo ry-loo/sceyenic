@@ -40,7 +40,7 @@ export function Lightbox({ images, index, onClose, onChange }: LightboxProps) {
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/92 animate-lightbox-in"
+      className="fixed inset-0 z-[60] flex items-center justify-center bg-black/92 animate-fade-in"
       role="dialog"
       aria-modal="true"
       aria-label="Image lightbox"
@@ -48,7 +48,7 @@ export function Lightbox({ images, index, onClose, onChange }: LightboxProps) {
     >
       <button
         type="button"
-        className="nav-link absolute right-5 top-5 z-10 text-white/80 hover:text-white"
+        className="absolute top-5 right-5 z-10 rounded-full bg-white/10 px-4 py-2 text-[13px] text-white/90 backdrop-blur-md transition-colors hover:bg-white/20"
         onClick={onClose}
         aria-label="Close lightbox"
       >
@@ -57,7 +57,7 @@ export function Lightbox({ images, index, onClose, onChange }: LightboxProps) {
 
       <button
         type="button"
-        className="nav-link absolute left-3 top-1/2 z-10 -translate-y-1/2 text-white/70 hover:text-white sm:left-6"
+        className="absolute top-1/2 left-4 z-10 -translate-y-1/2 rounded-full bg-white/10 px-4 py-2 text-[13px] text-white/90 backdrop-blur-md transition-colors hover:bg-white/20 sm:left-6"
         onClick={(e) => {
           e.stopPropagation();
           prev();
@@ -69,7 +69,7 @@ export function Lightbox({ images, index, onClose, onChange }: LightboxProps) {
 
       <button
         type="button"
-        className="nav-link absolute right-3 top-1/2 z-10 -translate-y-1/2 text-white/70 hover:text-white sm:right-6"
+        className="absolute top-1/2 right-4 z-10 -translate-y-1/2 rounded-full bg-white/10 px-4 py-2 text-[13px] text-white/90 backdrop-blur-md transition-colors hover:bg-white/20 sm:right-6"
         onClick={(e) => {
           e.stopPropagation();
           next();
@@ -80,7 +80,7 @@ export function Lightbox({ images, index, onClose, onChange }: LightboxProps) {
       </button>
 
       <div
-        className="relative mx-auto flex max-h-[90dvh] max-w-[92vw] items-center justify-center"
+        className="relative mx-auto flex max-h-[88dvh] max-w-[90vw] items-center justify-center"
         onClick={(e) => e.stopPropagation()}
       >
         <Image
@@ -88,13 +88,13 @@ export function Lightbox({ images, index, onClose, onChange }: LightboxProps) {
           alt={image.alt}
           width={image.width}
           height={image.height}
-          className="max-h-[90dvh] w-auto max-w-full object-contain"
-          sizes="92vw"
+          className="max-h-[88dvh] w-auto max-w-full rounded-lg object-contain"
+          sizes="90vw"
           priority
         />
       </div>
 
-      <p className="nav-link absolute bottom-5 left-1/2 -translate-x-1/2 text-white/50">
+      <p className="absolute bottom-6 left-1/2 -translate-x-1/2 text-[13px] text-white/45">
         {index + 1} / {images.length}
       </p>
     </div>

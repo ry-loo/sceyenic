@@ -1,25 +1,19 @@
 import type { Metadata } from "next";
-import { IBM_Plex_Mono, Outfit } from "next/font/google";
+import { Manrope } from "next/font/google";
 import { SiteShell } from "@/components/SiteShell";
 import { site } from "@/data/portfolio";
 import "./globals.css";
 
-const brand = Outfit({
+const brand = Manrope({
   variable: "--font-brand",
   subsets: ["latin"],
-  weight: ["400", "500", "600"],
+  weight: ["400", "500", "600", "700"],
 });
 
-const nav = IBM_Plex_Mono({
-  variable: "--font-nav",
-  subsets: ["latin"],
-  weight: ["400", "500"],
-});
-
-const body = Outfit({
+const body = Manrope({
   variable: "--font-body",
   subsets: ["latin"],
-  weight: ["300", "400", "500"],
+  weight: ["300", "400", "500", "600", "700"],
 });
 
 export const metadata: Metadata = {
@@ -42,9 +36,9 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${brand.variable} ${nav.variable} ${body.variable} h-full antialiased`}
+      className={`${brand.variable} ${body.variable} h-full antialiased`}
     >
-      <body className="min-h-full bg-white text-[#1a1a1a]">
+      <body className="min-h-full">
         <SiteShell>{children}</SiteShell>
       </body>
     </html>

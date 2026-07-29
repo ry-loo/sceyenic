@@ -1,48 +1,47 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #1a1a1a;
-  --muted: #888888;
-  --gutter: 1.5rem;
+  --background: #f5f5f7;
+  --foreground: #1d1d1f;
+  --muted: #86868b;
+  --surface: #ffffff;
+  --ink: #000000;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-muted: var(--muted);
+  --color-surface: var(--surface);
+  --color-ink: var(--ink);
   --font-sans: var(--font-body);
-  --font-mono: var(--font-nav);
   --font-display: var(--font-brand);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-body), ui-sans-serif, system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 .font-display {
   font-family: var(--font-brand), ui-sans-serif, system-ui, sans-serif;
 }
 
-.nav-link {
-  font-family: var(--font-nav), ui-monospace, monospace;
-  font-size: 0.7rem;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  text-decoration: none;
-  color: inherit;
-}
-
-.masonry-item {
-  opacity: 0;
-  animation: masonry-in 0.55s ease forwards;
-}
-
-@keyframes masonry-in {
+@keyframes fade-up {
   from {
     opacity: 0;
-    transform: translateY(10px);
+    transform: translateY(18px);
   }
   to {
     opacity: 1;
@@ -59,27 +58,61 @@ body {
   }
 }
 
-@keyframes lightbox-in {
+@keyframes scale-in {
   from {
     opacity: 0;
+    transform: scale(1.04);
   }
   to {
     opacity: 1;
+    transform: scale(1);
   }
 }
 
-.animate-fade-in {
-  animation: fade-in 0.45s ease both;
+.animate-fade-up {
+  animation: fade-up 0.9s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
-.animate-lightbox-in {
-  animation: lightbox-in 0.2s ease both;
+.animate-fade-in {
+  animation: fade-in 0.7s ease both;
+}
+
+.animate-hero-image {
+  animation: scale-in 1.4s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.animate-stagger > * {
+  animation: fade-up 0.8s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.animate-stagger > *:nth-child(1) {
+  animation-delay: 0.05s;
+}
+.animate-stagger > *:nth-child(2) {
+  animation-delay: 0.12s;
+}
+.animate-stagger > *:nth-child(3) {
+  animation-delay: 0.19s;
+}
+.animate-stagger > *:nth-child(4) {
+  animation-delay: 0.26s;
+}
+.animate-stagger > *:nth-child(5) {
+  animation-delay: 0.33s;
+}
+.animate-stagger > *:nth-child(6) {
+  animation-delay: 0.4s;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .masonry-item,
+  html {
+    scroll-behavior: auto;
+  }
+
+  .animate-fade-up,
   .animate-fade-in,
-  .animate-lightbox-in {
+  .animate-hero-image,
+  .animate-stagger > * {
     animation: none;
     opacity: 1;
     transform: none;

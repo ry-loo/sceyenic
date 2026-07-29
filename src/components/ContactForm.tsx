@@ -17,46 +17,49 @@ export function ContactForm() {
     window.location.href = `mailto:${site.email}?subject=${subject}&body=${body}`;
   }
 
+  const fieldClass =
+    "mt-2 w-full rounded-2xl border border-black/8 bg-[#f5f5f7] px-4 py-3 text-[15px] text-[#1d1d1f] outline-none transition-shadow placeholder:text-[#86868b] focus:shadow-[0_0_0_4px_rgba(0,0,0,0.06)]";
+
   return (
-    <form onSubmit={onSubmit} className="space-y-6">
+    <form onSubmit={onSubmit} className="space-y-5">
       <label className="block">
-        <span className="nav-link mb-2 block text-[#888]">Name</span>
+        <span className="text-[13px] font-medium text-[#1d1d1f]">Name</span>
         <input
           type="text"
           name="name"
           value={name}
           onChange={(e) => setName(e.target.value)}
           required
-          className="w-full border-0 border-b border-[#ddd] bg-transparent py-2 text-sm outline-none transition-colors focus:border-[#111]"
+          className={fieldClass}
         />
       </label>
       <label className="block">
-        <span className="nav-link mb-2 block text-[#888]">Email</span>
+        <span className="text-[13px] font-medium text-[#1d1d1f]">Email</span>
         <input
           type="email"
           name="email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           required
-          className="w-full border-0 border-b border-[#ddd] bg-transparent py-2 text-sm outline-none transition-colors focus:border-[#111]"
+          className={fieldClass}
         />
       </label>
       <label className="block">
-        <span className="nav-link mb-2 block text-[#888]">Message</span>
+        <span className="text-[13px] font-medium text-[#1d1d1f]">Message</span>
         <textarea
           name="message"
           value={message}
           onChange={(e) => setMessage(e.target.value)}
           required
           rows={5}
-          className="w-full resize-y border-0 border-b border-[#ddd] bg-transparent py-2 text-sm outline-none transition-colors focus:border-[#111]"
+          className={`${fieldClass} resize-y`}
         />
       </label>
       <button
         type="submit"
-        className="nav-link mt-2 border border-[#111] px-5 py-2.5 text-[#111] transition-colors hover:bg-[#111] hover:text-white"
+        className="mt-2 inline-flex rounded-full bg-[#1d1d1f] px-6 py-3 text-[14px] font-medium text-white transition-transform hover:scale-[1.02]"
       >
-        Send
+        Send message
       </button>
     </form>
   );
