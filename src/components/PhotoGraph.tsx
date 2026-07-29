@@ -36,17 +36,8 @@ type HoverInfo = {
  * Left title column — matches the original hero copy placement.
  * Normalized: x 0–1 left→right, y 0–1 top→bottom.
  */
-function textSafeZoneFactor(sx: number, sy: number, pad = 0) {
-  const left = 0;
-  const right = 0.42 + pad;
-  const top = 0.12;
-  const bottom = 0.52 + pad * 0.35;
-  if (sx < left || sx > right || sy < top || sy > bottom) return 0;
-
-  const nx = (sx - left) / (right - left);
-  const ny = (sy - top) / (bottom - top);
-  const edge = Math.min(nx, 1 - nx, ny, 1 - ny);
-  return THREE.MathUtils.clamp(1 - edge / 0.2, 0, 1);
+function inTextSafeZone(sx: number, sy: number) {
+  return sx >= 0 && sx <= 0.5 && sy >= 0.1 && sy <= 0.56;
 }
 
 function PhotoNode({
@@ -69,7 +60,9 @@ function PhotoNode({
   const coreMatRef = useRef<THREE.MeshBasicMaterial>(null);
   const photoMeshRef = useRef<THREE.Mesh>(null);
   const worldPos = useRef(new THREE.Vector3());
-  const ndcPos = useRef(new THREE.Vector3());
+  const samplePos = useRef(new THREE.Vector3());
+  const camRight = useRef(new THREE.Vector3());
+  const camUp = useRef(new THREE.Vector3());
   const { camera, size } = useThree();
 
   const aspect = node.image.width / Math.max(node.image.height, 1);
@@ -86,19 +79,48 @@ function PhotoNode({
 
     let opacity = 1;
 
-    // Only soft-clear the title column at overview distances.
-    // When zoomed in, never force photos transparent.
-    ndcPos.current.copy(worldPos.current).project(camera);
-    if (ndcPos.current.z < 1 && dist > 22) {
-      const sx = ndcPos.current.x * 0.5 + 0.5;
-      const sy = 1 - (ndcPos.current.y * 0.5 + 0.5);
-      const cover = textSafeZoneFactor(sx, sy, 0.03);
-      // Ease out as you approach — fully off once close
-      const overview = THREE.MathUtils.clamp((dist - 22) / 28, 0, 1);
-      opacity *= 1 - cover * overview;
+    // At overview distance, hide any photo whose plane overlaps the title column.
+    // Sample center + corners so large frames can't peek under the copy.
+    if (dist > 20) {
+      camRight.current.setFromMatrixColumn(camera.matrixWorld, 0).normalize();
+      camUp.current.setFromMatrixColumn(camera.matrixWorld, 1).normalize();
+      const hw = (w * scale * 0.55);
+      const hh = (h * scale * 0.55);
+      const offsets: [number, number][] = [
+        [0, 0],
+        [hw, hh],
+        [hw, -hh],
+        [-hw, hh],
+        [-hw, -hh],
+        [hw, 0],
+        [-hw, 0],
+        [0, hh],
+        [0, -hh],
+      ];
+
+      let hitsZone = false;
+      for (const [ox, oy] of offsets) {
+        samplePos.current
+          .copy(worldPos.current)
+          .addScaledVector(camRight.current, ox)
+          .addScaledVector(camUp.current, oy)
+          .project(camera);
+        if (samplePos.current.z >= 1) continue;
+        const sx = samplePos.current.x * 0.5 + 0.5;
+        const sy = 1 - (samplePos.current.y * 0.5 + 0.5);
+        if (inTextSafeZone(sx, sy)) {
+          hitsZone = true;
+          break;
+        }
+      }
+
+      if (hitsZone) {
+        const overview = THREE.MathUtils.clamp((dist - 20) / 16, 0, 1);
+        opacity = 1 - overview; // fully clear once fully in overview
+      }
     }
 
-    const show = opacity > 0.05;
+    const show = opacity > 0.08;
     photoMatRef.current.opacity = opacity;
     photoMatRef.current.visible = show;
     if (photoMeshRef.current) {
@@ -348,7 +370,7 @@ export function PhotoGraph() {
 
       <div className="pointer-events-none absolute inset-0 z-10">
         <div className="absolute top-20 left-5 max-w-md sm:top-24 sm:left-10">
-          <div className="pointer-events-none absolute -inset-6 -z-10 rounded-3xl bg-black/40 blur-2xl" />
+          <div className="pointer-events-none absolute -inset-8 -z-10 rounded-3xl bg-black/55 blur-3xl" />
           <h1 className="font-display text-[clamp(2.75rem,9vw,5.75rem)] leading-[0.9] font-semibold tracking-[-0.05em] text-white">
             sceyenic
           </h1>
