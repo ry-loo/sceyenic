@@ -45,23 +45,20 @@ export default function HomePage() {
                 </Link>
               </div>
 
-              <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-4 lg:gap-5">
-                {category.images.slice(0, 8).map((image, index) => (
-                  <Link
-                    key={`${image.src}-${index}`}
-                    href={`/work/${category.slug}`}
-                    className="group relative aspect-[4/5] overflow-hidden rounded-[16px] bg-white/5 sm:rounded-[20px]"
-                  >
-                    <Image
-                      src={image.src}
-                      alt={image.alt}
-                      fill
-                      className="object-cover transition-transform duration-700 ease-out group-hover:scale-[1.03]"
-                      sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
-                    />
-                  </Link>
-                ))}
-              </div>
+              {category.images[0] && (
+                <Link
+                  href={`/work/${category.slug}`}
+                  className="group relative block aspect-[16/9] overflow-hidden rounded-[20px] bg-white/5 sm:rounded-[24px]"
+                >
+                  <Image
+                    src={category.images[0].src}
+                    alt={category.images[0].alt}
+                    fill
+                    className="object-cover transition-transform duration-700 ease-out group-hover:scale-[1.03]"
+                    sizes="100vw"
+                  />
+                </Link>
+              )}
 
               <Link
                 href={`/work/${category.slug}`}
