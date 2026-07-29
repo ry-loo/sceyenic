@@ -49,8 +49,9 @@ body {
   opacity: 0;
   transform: translate(var(--leak-x, 0), var(--leak-y, 0))
     rotate(var(--leak-rot, 0deg));
-  filter: blur(18px) saturate(1.35);
+  filter: blur(28px) saturate(1.1);
   will-change: opacity, transform;
+  transition: transform 2.8s ease;
 }
 
 @keyframes fade-up {

@@ -41,7 +41,7 @@ function PhotoNode({
   texture.colorSpace = THREE.SRGBColorSpace;
 
   const aspect = node.image.width / Math.max(node.image.height, 1);
-  const base = 1.85;
+  const base = 2.2;
   const w = aspect >= 1 ? base : base * aspect;
   const h = aspect >= 1 ? base / aspect : base;
   const scale = highlighted ? 1.4 : 1;
@@ -176,12 +176,11 @@ function Scene({
         makeDefault
         enableDamping
         dampingFactor={0.06}
-        minDistance={4}
-        maxDistance={160}
-        target={[12, 0, 0]}
-        zoomSpeed={1.2}
-        rotateSpeed={0.5}
-        panSpeed={0.7}
+        minDistance={3}
+        maxDistance={95}
+        zoomSpeed={1.15}
+        rotateSpeed={0.55}
+        panSpeed={0.75}
       />
     </>
   );
@@ -224,7 +223,7 @@ export function PhotoGraph() {
   return (
     <div className="relative h-dvh w-full overflow-hidden bg-black">
       <Canvas
-        camera={{ position: [12, 0, 115], fov: 42, near: 0.1, far: 400 }}
+        camera={{ position: [0, 10, 55], fov: 48, near: 0.1, far: 300 }}
         dpr={[1, 1.75]}
         gl={{ antialias: true, alpha: false }}
         onPointerMissed={() => setHover(null)}
