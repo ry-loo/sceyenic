@@ -30,9 +30,6 @@ export default function HomePage() {
             <h2 className="font-display text-[clamp(1.75rem,4vw,2.75rem)] leading-[1.1] font-semibold tracking-[-0.04em] text-white">
               Explore my work
             </h2>
-            <p className="mt-2 text-[15px] text-white/45">
-              A few different paths through the work. Open any card to step into the full set.
-            </p>
           </div>
 
           <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-5">
@@ -56,9 +53,6 @@ export default function HomePage() {
                     <h3 className="text-[15px] font-medium text-white">
                       {category.title}
                     </h3>
-                    <p className="mt-1 text-[13px] text-white/45">
-                      {category.description}
-                    </p>
                   </div>
                 </Link>
               ) : null,
