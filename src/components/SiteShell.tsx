@@ -22,11 +22,11 @@ export function SiteShell({ children }: { children: React.ReactNode }) {
   }, [pathname]);
 
   useEffect(() => {
-    document.body.style.overflow = open ? "hidden" : isGraph ? "hidden" : "";
+    document.body.style.overflow = open ? "hidden" : "";
     return () => {
       document.body.style.overflow = "";
     };
-  }, [open, isGraph]);
+  }, [open]);
 
   return (
     <div className="relative min-h-dvh bg-black text-[#f5f5f7]">
@@ -104,8 +104,7 @@ export function SiteShell({ children }: { children: React.ReactNode }) {
 
       <main className="relative z-10">{children}</main>
 
-      {!isGraph && (
-        <footer className="relative z-10 border-t border-white/5 bg-black/50">
+      <footer className="relative z-10 border-t border-white/5 bg-black/50">
           <div className="mx-auto flex max-w-[1400px] flex-col gap-8 px-5 py-14 sm:px-8 lg:flex-row lg:items-end lg:justify-between lg:px-10">
             <div>
               <p className="font-display text-2xl font-semibold tracking-[-0.03em] text-white">
@@ -132,7 +131,6 @@ export function SiteShell({ children }: { children: React.ReactNode }) {
             </div>
           </div>
         </footer>
-      )}
     </div>
   );
 }
