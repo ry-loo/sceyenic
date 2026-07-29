@@ -1,0 +1,87 @@
+@import "tailwindcss";
+
+:root {
+  --background: #ffffff;
+  --foreground: #1a1a1a;
+  --muted: #888888;
+  --gutter: 1.5rem;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-body);
+  --font-mono: var(--font-nav);
+  --font-display: var(--font-brand);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-body), ui-sans-serif, system-ui, sans-serif;
+}
+
+.font-display {
+  font-family: var(--font-brand), ui-sans-serif, system-ui, sans-serif;
+}
+
+.nav-link {
+  font-family: var(--font-nav), ui-monospace, monospace;
+  font-size: 0.7rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  text-decoration: none;
+  color: inherit;
+}
+
+.masonry-item {
+  opacity: 0;
+  animation: masonry-in 0.55s ease forwards;
+}
+
+@keyframes masonry-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes lightbox-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.animate-fade-in {
+  animation: fade-in 0.45s ease both;
+}
+
+.animate-lightbox-in {
+  animation: lightbox-in 0.2s ease both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .masonry-item,
+  .animate-fade-in,
+  .animate-lightbox-in {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+}
