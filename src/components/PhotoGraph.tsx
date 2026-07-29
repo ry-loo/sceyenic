@@ -309,7 +309,7 @@ export function PhotoGraph() {
             sceyenic
           </h1>
           <p className="mt-4 max-w-sm text-[14px] leading-relaxed text-white/55 sm:text-[15px]">
-            Scroll into the graph. Drag to move around. Click any photo to open
+            Scroll into the graph. Follow the threads. Click any photo to open
             it.
           </p>
         </div>
