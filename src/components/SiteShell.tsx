@@ -41,7 +41,7 @@ export function SiteShell({ children }: { children: React.ReactNode }) {
             {site.name}
           </Link>
 
-          <nav className="hidden items-center gap-8 md:flex" aria-label="Primary">
+          <nav className="hidden items-center gap-6 md:flex" aria-label="Primary">
             {links.map((link) => (
               <Link
                 key={link.href}
@@ -51,17 +51,15 @@ export function SiteShell({ children }: { children: React.ReactNode }) {
                 {link.label}
               </Link>
             ))}
-            <div className="hidden items-center gap-4 lg:flex">
-              {categories.slice(0, 3).map((c) => (
-                <Link
-                  key={c.slug}
-                  href={`/work/${c.slug}`}
-                  className="text-[12px] text-white/35 transition-colors hover:text-white/80"
-                >
-                  {c.title}
-                </Link>
-              ))}
-            </div>
+            {categories.map((c) => (
+              <Link
+                key={c.slug}
+                href={`/work/${c.slug}`}
+                className="text-[13px] text-white/70 transition-opacity hover:opacity-100"
+              >
+                {c.title}
+              </Link>
+            ))}
           </nav>
 
           <button
