@@ -33,14 +33,6 @@ type HoverInfo = {
   y: number;
 };
 
-/**
- * Tight AABB around the left hero title + instructions only.
- * Normalized: x 0–1 left→right, y 0–1 top→bottom.
- */
-function inTextSafeZone(sx: number, sy: number) {
-  return sx >= 0.02 && sx <= 0.34 && sy >= 0.14 && sy <= 0.42;
-}
-
 function PhotoNode({
   node,
   highlighted,
@@ -55,17 +47,6 @@ function PhotoNode({
   const texture = useTexture(node.image.src);
   texture.colorSpace = THREE.SRGBColorSpace;
 
-  const groupRef = useRef<THREE.Group>(null);
-  const photoMatRef = useRef<THREE.MeshBasicMaterial>(null);
-  const glowMatRef = useRef<THREE.MeshBasicMaterial>(null);
-  const coreMatRef = useRef<THREE.MeshBasicMaterial>(null);
-  const photoMeshRef = useRef<THREE.Mesh>(null);
-  const worldPos = useRef(new THREE.Vector3());
-  const samplePos = useRef(new THREE.Vector3());
-  const camRight = useRef(new THREE.Vector3());
-  const camUp = useRef(new THREE.Vector3());
-  const { camera, size } = useThree();
-
   const aspect = node.image.width / Math.max(node.image.height, 1);
   const base = 2.4;
   const w = aspect >= 1 ? base : base * aspect;
@@ -73,74 +54,12 @@ function PhotoNode({
   const scale = highlighted ? 1.35 : 1;
   const glow = getCategoryColor(node.category);
 
-  useFrame(() => {
-    if (!groupRef.current || !photoMatRef.current) return;
-    groupRef.current.getWorldPosition(worldPos.current);
-    const dist = camera.position.distanceTo(worldPos.current);
-
-    let opacity = 1;
-
-    // Keep hero title clear — never suppress the landing focal photo
-    if (!node.isLanding && dist < 75) {
-      camRight.current.setFromMatrixColumn(camera.matrixWorld, 0).normalize();
-      camUp.current.setFromMatrixColumn(camera.matrixWorld, 1).normalize();
-      // Modest inset — don't treat distant oversized projections as huge hit areas
-      const hw = w * scale * 0.35;
-      const hh = h * scale * 0.35;
-      const offsets: [number, number][] = [
-        [0, 0],
-        [hw, hh],
-        [hw, -hh],
-        [-hw, hh],
-        [-hw, -hh],
-      ];
-
-      let hitsZone = false;
-      for (const [ox, oy] of offsets) {
-        samplePos.current
-          .copy(worldPos.current)
-          .addScaledVector(camRight.current, ox)
-          .addScaledVector(camUp.current, oy)
-          .project(camera);
-        if (samplePos.current.z >= 1) continue;
-        const sx = samplePos.current.x * 0.5 + 0.5;
-        const sy = 1 - (samplePos.current.y * 0.5 + 0.5);
-        if (inTextSafeZone(sx, sy)) {
-          hitsZone = true;
-          break;
-        }
-      }
-
-      if (hitsZone) {
-        opacity = 0;
-      }
-    }
-
-    const show = opacity > 0.08;
-    photoMatRef.current.opacity = opacity;
-    photoMatRef.current.visible = show;
-    if (photoMeshRef.current) {
-      photoMeshRef.current.visible = show;
-    }
-    if (glowMatRef.current) {
-      glowMatRef.current.opacity = (highlighted ? 0.5 : 0.16) * (show ? 1 : 0);
-      glowMatRef.current.visible = show;
-    }
-    if (coreMatRef.current) {
-      coreMatRef.current.opacity = 0.85 * (show ? 1 : 0);
-      coreMatRef.current.visible = show;
-    }
-
-    void size.width;
-  });
-
   return (
-    <group ref={groupRef} position={[node.x, node.y, node.z]}>
+    <group position={[node.x, node.y, node.z]}>
       <Billboard follow>
         <mesh scale={[scale * 1.1, scale * 1.1, 1]} position={[0, 0, -0.03]}>
           <planeGeometry args={[w + 0.4, h + 0.4]} />
           <meshBasicMaterial
-            ref={glowMatRef}
             color={glow}
             transparent
             opacity={highlighted ? 0.5 : 0.16}
@@ -149,7 +68,6 @@ function PhotoNode({
           />
         </mesh>
         <mesh
-          ref={photoMeshRef}
           scale={[scale, scale, 1]}
           onPointerOver={(e) => {
             e.stopPropagation();
@@ -172,11 +90,8 @@ function PhotoNode({
         >
           <planeGeometry args={[w, h]} />
           <meshBasicMaterial
-            ref={photoMatRef}
             map={texture}
             toneMapped={false}
-            transparent
-            opacity={1}
             depthWrite
             fog={false}
           />
@@ -185,7 +100,6 @@ function PhotoNode({
       <mesh>
         <sphereGeometry args={[0.1, 12, 12]} />
         <meshBasicMaterial
-          ref={coreMatRef}
           color={glow}
           transparent
           opacity={0.85}
@@ -385,7 +299,7 @@ export function PhotoGraph() {
 
       <div className="pointer-events-none absolute inset-0 z-10">
         <div className="absolute top-20 left-5 max-w-md sm:top-24 sm:left-10">
-          <div className="pointer-events-none absolute -inset-8 -z-10 rounded-3xl bg-black/55 blur-3xl" />
+          <div className="pointer-events-none absolute -inset-10 -z-10 rounded-3xl bg-gradient-to-br from-black/80 via-black/65 to-black/20 blur-2xl" />
           <h1 className="font-display text-[clamp(2.75rem,9vw,5.75rem)] leading-[0.9] font-semibold tracking-[-0.05em] text-white">
             sceyenic
           </h1>
