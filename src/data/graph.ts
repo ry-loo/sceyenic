@@ -8,12 +8,17 @@ export type GraphNode = {
   x: number;
   y: number;
   z: number;
+  /** True when this node is the page-load framing target */
+  isLanding: boolean;
 };
 
 export type GraphLink = {
   source: string;
   target: string;
 };
+
+/** Camera offset from the landing photo on first load (world units). */
+export const LANDING_CAMERA_OFFSET = { x: 2.4, y: 1.35, z: 9.8 } as const;
 
 const CATEGORY_COLORS: Record<string, string> = {
   street: "#ff4d6d",
@@ -25,6 +30,10 @@ const CATEGORY_COLORS: Record<string, string> = {
 
 export function getCategoryColor(slug: string) {
   return CATEGORY_COLORS[slug] ?? "#ff6b8a";
+}
+
+export function getLandingNode(nodes: GraphNode[]): GraphNode | undefined {
+  return nodes.find((n) => n.isLanding) ?? nodes[0];
 }
 
 /** Deterministic pseudo-random from string */
@@ -68,6 +77,7 @@ export function buildPhotoGraph(): { nodes: GraphNode[]; links: GraphLink[] } {
         category: category.slug,
         categoryTitle: category.title,
         image,
+        isLanding: image.label === "landing photo",
         x: cx * (1 - inward) + localX,
         y: cy * (1 - inward) + localY,
         z: cz * (1 - inward) + localZ,

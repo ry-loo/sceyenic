@@ -19,6 +19,8 @@ import type { OrbitControls as OrbitControlsImpl } from "three-stdlib";
 import {
   buildPhotoGraph,
   getCategoryColor,
+  getLandingNode,
+  LANDING_CAMERA_OFFSET,
   type GraphNode,
 } from "@/data/graph";
 import { Lightbox } from "@/components/Lightbox";
@@ -191,12 +193,36 @@ function Scene({
 }) {
   const controls = useRef<OrbitControlsImpl>(null);
   const { camera } = useThree();
+  const framedLanding = useRef(false);
+  const landing = useMemo(() => getLandingNode(nodes), [nodes]);
+
+  // Frame the labeled landing photo on first load
+  useFrame(() => {
+    if (framedLanding.current || !landing || !controls.current) return;
+    const goal = new THREE.Vector3(landing.x, landing.y, landing.z);
+    camera.position.set(
+      goal.x + LANDING_CAMERA_OFFSET.x,
+      goal.y + LANDING_CAMERA_OFFSET.y,
+      goal.z + LANDING_CAMERA_OFFSET.z,
+    );
+    controls.current.target.copy(goal);
+    controls.current.update();
+    framedLanding.current = true;
+  });
 
   useFrame((_, delta) => {
     const target = focusRef.current;
     if (!target || !controls.current) return;
     const goal = new THREE.Vector3(target.x, target.y, target.z);
-    const desiredCam = goal.clone().add(new THREE.Vector3(0, 1.2, 8));
+    const desiredCam = goal
+      .clone()
+      .add(
+        new THREE.Vector3(
+          LANDING_CAMERA_OFFSET.x,
+          LANDING_CAMERA_OFFSET.y,
+          LANDING_CAMERA_OFFSET.z,
+        ),
+      );
     camera.position.lerp(desiredCam, 1 - Math.exp(-2.4 * delta));
     controls.current.target.lerp(goal, 1 - Math.exp(-2.4 * delta));
     controls.current.update();
