@@ -21,7 +21,6 @@ import {
   getCategoryColor,
   getLandingNode,
   LANDING_CAMERA_OFFSET,
-  LANDING_LOOK_BIAS,
   type GraphNode,
 } from "@/data/graph";
 import { Lightbox } from "@/components/Lightbox";
@@ -33,19 +32,27 @@ type HoverInfo = {
   y: number;
 };
 
-/** Screen region reserved for the hero title + instructions (normalized 0–1, y from top). */
+/**
+ * Only the top + bottom chrome bands — center stays free for the landing photo.
+ * Normalized coords: x 0–1 left→right, y 0–1 top→bottom.
+ */
 function textSafeZoneFactor(sx: number, sy: number, pad = 0) {
-  const left = 0;
-  const right = 0.52 + pad;
-  const top = 0.08;
-  const bottom = 0.5 + pad * 0.5;
-  if (sx < left || sx > right || sy < top || sy > bottom) return 0;
+  const inTopBand =
+    sy >= 0.06 && sy <= 0.22 + pad * 0.5 && sx >= 0.08 && sx <= 0.92;
+  const inBottomBand =
+    sy >= 0.78 - pad * 0.5 && sy <= 0.96 && sx >= 0.2 && sx <= 0.8;
 
-  const nx = (sx - left) / (right - left);
-  const ny = (sy - top) / (bottom - top);
-  const edge = Math.min(nx, 1 - nx, ny, 1 - ny);
-  const strength = 1 - Math.min(1, edge / 0.22);
-  return THREE.MathUtils.clamp(strength, 0, 1);
+  if (!inTopBand && !inBottomBand) return 0;
+
+  if (inTopBand) {
+    const ny = (sy - 0.06) / (0.16 + pad * 0.5);
+    const edge = Math.min(ny, 1 - ny);
+    return THREE.MathUtils.clamp(1 - edge / 0.35, 0, 1) * 0.85;
+  }
+
+  const ny = (sy - (0.78 - pad * 0.5)) / (0.18 + pad * 0.5);
+  const edge = Math.min(ny, 1 - ny);
+  return THREE.MathUtils.clamp(1 - edge / 0.35, 0, 1) * 0.7;
 }
 
 function PhotoNode({
@@ -93,9 +100,10 @@ function PhotoNode({
     if (ndcPos.current.z < 1) {
       const sx = ndcPos.current.x * 0.5 + 0.5;
       const sy = 1 - (ndcPos.current.y * 0.5 + 0.5);
-      const pad = dist < 26 ? 0.14 : dist < 40 ? 0.08 : 0.02;
+      const pad = dist < 22 ? 0.06 : 0.02;
       const cover = textSafeZoneFactor(sx, sy, pad);
-      const visibleSize = dist < 75 ? 1 : 0;
+      // Never suppress the landing photo itself — it is the focal point
+      const visibleSize = node.isLanding ? 0 : dist < 75 ? 1 : 0;
       opacity *= 1 - cover * visibleSize;
     }
 
@@ -238,14 +246,10 @@ function Scene({
   const framedLanding = useRef(false);
   const landing = useMemo(() => getLandingNode(nodes), [nodes]);
 
-  // Frame the labeled landing photo on first load — photo mid-right, left clear for title
+  // Frame the labeled landing photo dead-center on first load
   useFrame(() => {
     if (framedLanding.current || !landing || !controls.current) return;
-    const look = new THREE.Vector3(
-      landing.x + LANDING_LOOK_BIAS.x,
-      landing.y + LANDING_LOOK_BIAS.y,
-      landing.z + LANDING_LOOK_BIAS.z,
-    );
+    const look = new THREE.Vector3(landing.x, landing.y, landing.z);
     camera.position.set(
       landing.x + LANDING_CAMERA_OFFSET.x,
       landing.y + LANDING_CAMERA_OFFSET.y,
@@ -259,15 +263,11 @@ function Scene({
   useFrame((_, delta) => {
     const target = focusRef.current;
     if (!target || !controls.current) return;
-    const look = new THREE.Vector3(
-      target.x + LANDING_LOOK_BIAS.x * 0.35,
-      target.y + LANDING_LOOK_BIAS.y * 0.35,
-      target.z + LANDING_LOOK_BIAS.z * 0.35,
-    );
+    const look = new THREE.Vector3(target.x, target.y, target.z);
     const desiredCam = new THREE.Vector3(
-      target.x + LANDING_CAMERA_OFFSET.x * 0.85,
-      target.y + LANDING_CAMERA_OFFSET.y * 0.85,
-      target.z + LANDING_CAMERA_OFFSET.z * 0.85,
+      target.x + LANDING_CAMERA_OFFSET.x,
+      target.y + LANDING_CAMERA_OFFSET.y,
+      target.z + LANDING_CAMERA_OFFSET.z,
     );
     camera.position.lerp(desiredCam, 1 - Math.exp(-2.4 * delta));
     controls.current.target.lerp(look, 1 - Math.exp(-2.4 * delta));
@@ -370,12 +370,13 @@ export function PhotoGraph() {
       </Canvas>
 
       <div className="pointer-events-none absolute inset-0 z-10">
-        <div className="absolute top-20 left-5 max-w-md sm:top-24 sm:left-10">
-          <div className="pointer-events-none absolute -inset-6 -z-10 rounded-3xl bg-black/35 blur-2xl" />
-          <h1 className="font-display text-[clamp(2.75rem,9vw,5.75rem)] leading-[0.9] font-semibold tracking-[-0.05em] text-white">
+        {/* Title sits above the centered landing photo */}
+        <div className="absolute top-16 left-1/2 w-[min(92vw,640px)] -translate-x-1/2 text-center sm:top-[4.5rem]">
+          <div className="pointer-events-none absolute inset-x-8 -inset-y-4 -z-10 rounded-full bg-black/40 blur-2xl" />
+          <h1 className="font-display text-[clamp(2.25rem,6vw,4.25rem)] leading-[0.95] font-semibold tracking-[-0.05em] text-white">
             sceyenic
           </h1>
-          <p className="mt-4 max-w-sm text-[14px] leading-relaxed text-white/55 sm:text-[15px]">
+          <p className="mx-auto mt-3 max-w-md text-[13px] leading-relaxed text-white/55 sm:text-[14px]">
             Scroll into the graph. Drag to move around. Click any photo to open
             it.
           </p>
