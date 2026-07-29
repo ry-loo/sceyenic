@@ -1,44 +1,59 @@
 import type { Metadata } from "next";
-import Link from "next/link";
+import { Caveat } from "next/font/google";
 import { site } from "@/data/portfolio";
+
+const script = Caveat({
+  variable: "--font-script",
+  subsets: ["latin"],
+  weight: ["500", "600"],
+});
 
 export const metadata: Metadata = {
   title: "About",
-  description: `About ${site.name} photography.`,
+  description: `About Ryan — ${site.name} photography.`,
 };
 
 export default function AboutPage() {
   return (
-    <div className="relative pt-28 pb-24 sm:pt-36 sm:pb-32">
-      <article className="mx-auto max-w-[720px] px-5 sm:px-8">
-        <p className="text-[12px] font-medium tracking-[0.16em] text-white/40 uppercase">
-          About
-        </p>
-        <h1 className="mt-4 font-display text-[clamp(2.5rem,6vw,4rem)] leading-[1.05] font-semibold tracking-[-0.045em] text-white">
-          Quiet frames. Clear intent.
-        </h1>
-        <div className="mt-10 space-y-6 text-[17px] leading-relaxed font-light text-white/65">
-          <p>
-            {site.name} is a photography practice spanning street,
-            photojournalism, graduation, headshots, and events. The work favors
-            clarity, timing, and observation over spectacle.
-          </p>
-          <p>
-            Whether documenting a public moment or making a simple portrait, the
-            approach stays the same: listen first, then shoot with intention.
-          </p>
-          <p>
-            Available for commissions and collaborations, wherever the
-            assignment leads.
-          </p>
+    <div
+      className={`${script.variable} relative pt-28 pb-24 sm:pt-36 sm:pb-32`}
+    >
+      <div className="mx-auto max-w-[1100px] px-5 sm:px-8 lg:px-10">
+        <div className="grid items-start gap-12 lg:grid-cols-[minmax(0,360px)_1fr] lg:gap-16 xl:gap-20">
+          <div
+            className="relative aspect-[3/4] w-full max-w-[360px] overflow-hidden rounded-[24px] border border-white/10 bg-white/[0.03] lg:sticky lg:top-32"
+            aria-label="Portrait photo"
+          />
+
+          <article className="min-w-0 pt-2 lg:pt-6">
+            <h1
+              className="text-[clamp(2.5rem,6vw,3.75rem)] leading-[1.1] font-semibold tracking-[-0.01em] text-white"
+              style={{ fontFamily: "var(--font-script), cursive" }}
+            >
+              hey, i&apos;m ryan!
+            </h1>
+
+            <div className="mt-8 space-y-6 text-[16px] leading-[1.75] text-white/60 sm:text-[17px]">
+              <p>
+                I&apos;m a Stanford-based street photographer with a passion for
+                capturing the nuance of the human experience through compelling
+                visual storytelling. My work spans six continents and over 37
+                countries, documenting a diverse range of people, places, and
+                moments.
+              </p>
+              <p>
+                While street photography remains my first love, I also have
+                experience with a wide range of professional photography
+                work—from individual portrait sessions to graduation photos,
+                headshots for White House employees and Churchill Scholarship
+                recipients, and regional events across the West Coast. My style
+                leans heavily toward candid imagery, aiming to preserve authentic
+                moments as they naturally unfold.
+              </p>
+            </div>
+          </article>
         </div>
-        <Link
-          href="/contact"
-          className="mt-12 inline-flex rounded-full bg-white px-6 py-3 text-[14px] font-medium text-[#1d1d1f] transition-transform hover:scale-[1.02]"
-        >
-          Get in touch
-        </Link>
-      </article>
+      </div>
     </div>
   );
 }
