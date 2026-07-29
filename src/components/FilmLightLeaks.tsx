@@ -2,66 +2,106 @@
 
 import { useEffect, useRef } from "react";
 
+const LEAKS = [
+  {
+    src: "/effects/leak-1.png",
+    // Diagonal orange→teal wash
+    className: "leak-img leak-diagonal",
+    baseOpacity: 0.12,
+    peak: 0.38,
+  },
+  {
+    src: "/effects/leak-2.png",
+    // Soft burnt-orange organic blobs
+    className: "leak-img leak-blobs",
+    baseOpacity: 0.1,
+    peak: 0.42,
+  },
+  {
+    src: "/effects/leak-3.png",
+    // Lens flare + sunburst + ghost orbs
+    className: "leak-img leak-flare",
+    baseOpacity: 0.08,
+    peak: 0.36,
+  },
+  {
+    src: "/effects/leak-4.png",
+    // Edge burns / horizontal film bands
+    className: "leak-img leak-edges",
+    baseOpacity: 0.1,
+    peak: 0.4,
+  },
+] as const;
+
 /**
- * Soft, slow film light-leak flickers over pure black.
- * Screen blend keeps black until a gentle flare appears.
+ * Real film light-leak plates (screen-blended) with slow, gentle pulses.
  */
 export function FilmLightLeaks() {
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const el = ref.current;
-    if (!el) return;
+    const root = ref.current;
+    if (!root) return;
+
+    const layers = Array.from(
+      root.querySelectorAll<HTMLElement>("[data-leak]"),
+    );
 
     let frame = 0;
     let raf = 0;
-    // Wait longer between bursts
-    let nextBurst = 180 + Math.random() * 240;
+    let nextFocus = 90 + Math.random() * 120;
+    let active = Math.floor(Math.random() * layers.length);
 
-    const leaks = [
-      el.querySelector<HTMLElement>("[data-leak='0']"),
-      el.querySelector<HTMLElement>("[data-leak='1']"),
-      el.querySelector<HTMLElement>("[data-leak='2']"),
-      el.querySelector<HTMLElement>("[data-leak='3']"),
-    ];
+    layers.forEach((layer, i) => {
+      layer.dataset.burst = "0";
+      layer.style.opacity = String(LEAKS[i].baseOpacity);
+    });
 
     const tick = (t: number) => {
       frame++;
 
-      leaks.forEach((leak, i) => {
-        if (!leak) return;
-        // Very low idle shimmer
-        const idle =
-          0.008 +
-          Math.sin(t * 0.00025 + i * 1.7) * 0.006 +
-          Math.sin(t * 0.00055 + i * 4.1) * 0.004;
-        const burst = Number(leak.dataset.burst ?? 0);
-        // Cap opacity lower for gentler flares
-        const opacity = Math.min(0.28, idle + burst);
-        leak.style.opacity = String(opacity);
-        // Slower decay
-        if (burst > 0.0005) {
-          leak.dataset.burst = String(burst * 0.985);
+      layers.forEach((layer, i) => {
+        const cfg = LEAKS[i];
+        const isActive = i === active;
+        const burst = Number(layer.dataset.burst ?? 0);
+
+        // Slow breathing
+        const breath =
+          Math.sin(t * 0.00018 + i * 2.1) * 0.035 +
+          Math.sin(t * 0.00009 + i * 0.7) * 0.02;
+
+        const target = isActive
+          ? cfg.baseOpacity + 0.08 + breath + burst
+          : cfg.baseOpacity * 0.35 + breath * 0.4;
+
+        const current = Number(layer.style.opacity || 0);
+        // Ease toward target for softness
+        const next = current + (Math.min(cfg.peak, Math.max(0, target)) - current) * 0.035;
+        layer.style.opacity = String(next);
+
+        // Very slow drift
+        const dx = Math.sin(t * 0.00007 + i) * 2.5;
+        const dy = Math.cos(t * 0.00005 + i * 1.3) * 2;
+        const rot = Math.sin(t * 0.00004 + i) * 1.5;
+        const scale = 1.05 + Math.sin(t * 0.00006 + i * 0.9) * 0.03;
+        layer.style.transform = `translate(${dx}%, ${dy}%) rotate(${rot}deg) scale(${scale})`;
+
+        if (burst > 0.001) {
+          layer.dataset.burst = String(burst * 0.988);
         } else {
-          leak.dataset.burst = "0";
+          layer.dataset.burst = "0";
         }
       });
 
-      if (frame > nextBurst) {
-        const idx = Math.floor(Math.random() * leaks.length);
-        const leak = leaks[idx];
-        if (leak) {
-          // Softer peak intensity
-          leak.dataset.burst = String(0.1 + Math.random() * 0.16);
-          const rot = -18 + Math.random() * 36;
-          const x = -8 + Math.random() * 30;
-          const y = -10 + Math.random() * 40;
-          leak.style.setProperty("--leak-rot", `${rot}deg`);
-          leak.style.setProperty("--leak-x", `${x}%`);
-          leak.style.setProperty("--leak-y", `${y}%`);
+      // Occasionally bring another plate forward, gently
+      if (frame > nextFocus) {
+        active = Math.floor(Math.random() * layers.length);
+        const layer = layers[active];
+        if (layer) {
+          layer.dataset.burst = String(0.06 + Math.random() * 0.1);
         }
-        // 4–12 seconds between bursts at ~60fps
-        nextBurst = frame + 240 + Math.random() * 480;
+        // ~6–14s between focus shifts
+        nextFocus = frame + 360 + Math.random() * 480;
       }
 
       raf = requestAnimationFrame(tick);
@@ -77,50 +117,17 @@ export function FilmLightLeaks() {
       className="film-leaks pointer-events-none absolute inset-0 z-[5] overflow-hidden"
       aria-hidden
     >
-      <div
-        data-leak="0"
-        className="film-leak"
-        style={{
-          background:
-            "radial-gradient(ellipse 90% 60% at 0% 35%, rgba(255,110,70,0.55), rgba(255,60,80,0.18) 45%, transparent 75%)",
-          ["--leak-x" as string]: "-5%",
-          ["--leak-y" as string]: "10%",
-          ["--leak-rot" as string]: "-14deg",
-        }}
-      />
-      <div
-        data-leak="1"
-        className="film-leak"
-        style={{
-          background:
-            "radial-gradient(ellipse 80% 65% at 100% 65%, rgba(255,80,100,0.5), rgba(255,150,60,0.15) 48%, transparent 78%)",
-          ["--leak-x" as string]: "12%",
-          ["--leak-y" as string]: "18%",
-          ["--leak-rot" as string]: "16deg",
-        }}
-      />
-      <div
-        data-leak="2"
-        className="film-leak"
-        style={{
-          background:
-            "radial-gradient(ellipse 60% 45% at 50% 0%, rgba(255,190,90,0.4), rgba(255,90,60,0.12) 55%, transparent 80%)",
-          ["--leak-x" as string]: "0%",
-          ["--leak-y" as string]: "-18%",
-          ["--leak-rot" as string]: "6deg",
-        }}
-      />
-      <div
-        data-leak="3"
-        className="film-leak"
-        style={{
-          background:
-            "radial-gradient(ellipse 55% 75% at 88% 18%, rgba(255,50,90,0.42), rgba(160,50,200,0.08) 42%, transparent 75%)",
-          ["--leak-x" as string]: "8%",
-          ["--leak-y" as string]: "-4%",
-          ["--leak-rot" as string]: "-10deg",
-        }}
-      />
+      {LEAKS.map((leak, i) => (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          key={leak.src}
+          data-leak={String(i)}
+          src={leak.src}
+          alt=""
+          className={leak.className}
+          draggable={false}
+        />
+      ))}
     </div>
   );
 }

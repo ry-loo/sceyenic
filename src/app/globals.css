@@ -38,9 +38,52 @@ body {
   font-family: var(--font-brand), ui-sans-serif, system-ui, sans-serif;
 }
 
-/* Film light leaks — screen blend keeps pure black until a flare hits */
+/* Film light leaks — real plates, screen-blended on pure black */
 .film-leaks {
   mix-blend-mode: screen;
+}
+
+.leak-img {
+  position: absolute;
+  max-width: none;
+  pointer-events: none;
+  opacity: 0;
+  will-change: opacity, transform;
+  user-select: none;
+}
+
+/* Diagonal streak (orange → teal) */
+.leak-diagonal {
+  left: -8%;
+  bottom: -5%;
+  width: 118%;
+  height: auto;
+  object-fit: cover;
+}
+
+/* Soft burnt-orange blobs */
+.leak-blobs {
+  inset: -5%;
+  width: 110%;
+  height: 110%;
+  object-fit: cover;
+}
+
+/* Lens flare / sunburst */
+.leak-flare {
+  top: -12%;
+  left: -18%;
+  width: 85%;
+  height: auto;
+  object-fit: contain;
+}
+
+/* Edge burns / film bands */
+.leak-edges {
+  inset: -8%;
+  width: 116%;
+  height: 116%;
+  object-fit: cover;
 }
 
 .film-leak {
@@ -132,6 +175,11 @@ body {
     animation: none;
     opacity: 1;
     transform: none;
+  }
+
+  .leak-img {
+    opacity: 0.12 !important;
+    transform: none !important;
   }
 
   .film-leak {
