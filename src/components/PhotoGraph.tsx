@@ -90,10 +90,7 @@ function PhotoNode({
     groupRef.current.getWorldPosition(worldPos.current);
     const dist = camera.position.distanceTo(worldPos.current);
 
-    // Depth haze
-    const t = THREE.MathUtils.clamp((dist - 24) / 60, 0, 1);
-    const haze = t * t;
-    let opacity = highlighted ? 1 : 1 - haze * 0.22;
+    let opacity = 1;
 
     // Keep hero title clear — hide photos that sit under the text
     ndcPos.current.copy(worldPos.current).project(camera);
@@ -114,12 +111,11 @@ function PhotoNode({
       photoMeshRef.current.visible = show;
     }
     if (glowMatRef.current) {
-      glowMatRef.current.opacity =
-        (highlighted ? 0.5 : 0.16) * (1 - haze * 0.35) * (show ? 1 : 0);
+      glowMatRef.current.opacity = (highlighted ? 0.5 : 0.16) * (show ? 1 : 0);
       glowMatRef.current.visible = show;
     }
     if (coreMatRef.current) {
-      coreMatRef.current.opacity = 0.85 * (1 - haze * 0.4) * (show ? 1 : 0);
+      coreMatRef.current.opacity = 0.85 * (show ? 1 : 0);
       coreMatRef.current.visible = show;
     }
 
@@ -137,7 +133,7 @@ function PhotoNode({
             transparent
             opacity={highlighted ? 0.5 : 0.16}
             depthWrite={false}
-            fog
+            fog={false}
           />
         </mesh>
         <mesh
@@ -170,7 +166,7 @@ function PhotoNode({
             transparent
             opacity={1}
             depthWrite
-            fog
+            fog={false}
           />
         </mesh>
       </Billboard>
@@ -181,7 +177,7 @@ function PhotoNode({
           color={glow}
           transparent
           opacity={0.85}
-          fog
+          fog={false}
         />
       </mesh>
     </group>
@@ -220,7 +216,7 @@ function EdgeLines({
         transparent
         opacity={0.55}
         depthWrite={false}
-        fog
+        fog={false}
       />
     </lineSegments>
   );
@@ -276,8 +272,6 @@ function Scene({
 
   return (
     <>
-      {/* Soft depth haze — distant nodes gently fade into the dark */}
-      <fog attach="fog" args={["#080706", 38, 105]} />
       <ambientLight intensity={0.7} />
       <Stars
         radius={120}
