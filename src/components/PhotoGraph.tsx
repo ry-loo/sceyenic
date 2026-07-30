@@ -151,9 +151,8 @@ const MAX_DISTANCE = 95;
 const PASSTHROUGH_THRESHOLD = 82;
 const FULLY_OUT_EPSILON = 1.25;
 const AUTOROTATE_IDLE_MS = 7000;
-const AUTOROTATE_SPEED = 0.35;
 
-/** Fully zoomed-out start — same direction as before, scaled to max distance. */
+/** Fully zoomed-out start (same view direction as [-50,36,-36]). */
 const INITIAL_CAMERA_POSITION: [number, number, number] = [
   -66.57, 47.93, -47.93,
 ];
@@ -184,8 +183,9 @@ function Scene({
   lastInteractRef: MutableRefObject<number>;
 }) {
   const { camera } = useThree();
+  const bootstrappedRef = useRef(false);
 
-  useFrame((_, delta) => {
+  useFrame((state, delta) => {
     const controls = controlsRef.current;
     if (!controls) return;
 
@@ -194,6 +194,7 @@ function Scene({
 
     const target = focusRef.current;
     if (target) {
+      controls.autoRotate = false;
       const look = new THREE.Vector3(
         target.x + LANDING_LOOK_BIAS.x * 0.4,
         target.y + LANDING_LOOK_BIAS.y * 0.4,
@@ -206,13 +207,23 @@ function Scene({
       );
       camera.position.lerp(desiredCam, 1 - Math.exp(-2.4 * delta));
       controls.target.lerp(look, 1 - Math.exp(-2.4 * delta));
-      controls.autoRotate = false;
       controls.update();
       return;
     }
 
-    if (!isFullyZoomedOut(dist)) {
+    const fullyOut = isFullyZoomedOut(dist);
+    if (!fullyOut) {
       controls.autoRotate = false;
+      return;
+    }
+
+    // Let the graph settle before orbiting (avoids the flash-then-blank GPU stall).
+    if (!bootstrappedRef.current) {
+      if (state.clock.elapsedTime >= 1.5) {
+        bootstrappedRef.current = true;
+        controls.autoRotate = true;
+        controls.autoRotateSpeed = 0.35;
+      }
       return;
     }
 
@@ -221,6 +232,7 @@ function Scene({
       performance.now() - lastInteractRef.current >= AUTOROTATE_IDLE_MS
     ) {
       controls.autoRotate = true;
+      controls.autoRotateSpeed = 0.35;
     }
   });
 
@@ -256,21 +268,13 @@ function Scene({
         zoomSpeed={1.15}
         rotateSpeed={0.55}
         panSpeed={0.75}
-        autoRotate
-        autoRotateSpeed={AUTOROTATE_SPEED}
       />
     </>
   );
 }
 
-function TextureCache({ urls }: { urls: string[] }) {
-  useTexture(urls);
-  return null;
-}
-
 export function PhotoGraph() {
   const { nodes, links } = useMemo(() => buildPhotoGraph(), []);
-  const urls = useMemo(() => nodes.map((n) => n.image.src), [nodes]);
   const [hover, setHover] = useState<HoverInfo | null>(null);
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
   const focusRef = useRef<GraphNode | null>(null);
@@ -308,12 +312,11 @@ export function PhotoGraph() {
 
   return (
     <div
-      className="relative z-[2] h-dvh w-full overflow-hidden bg-black"
+      className="relative h-dvh w-full overflow-hidden bg-transparent"
       onPointerDown={stopAutoRotate}
       onWheelCapture={(e) => {
         if (!controlsRef.current) return;
         stopAutoRotate();
-
         const shouldPassThrough =
           e.deltaY > 0 && cameraDistRef.current >= PASSTHROUGH_THRESHOLD;
 
@@ -336,7 +339,6 @@ export function PhotoGraph() {
       }}
     >
       <Canvas
-        className="h-full w-full touch-none"
         camera={{
           position: INITIAL_CAMERA_POSITION,
           fov: 48,
@@ -350,7 +352,6 @@ export function PhotoGraph() {
         }}
         onPointerMissed={() => setHover(null)}
       >
-        <TextureCache urls={urls} />
         <Scene
           nodes={nodes}
           links={links}
