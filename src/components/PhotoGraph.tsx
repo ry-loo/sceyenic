@@ -153,12 +153,9 @@ const FULLY_OUT_EPSILON = 1.25;
 const AUTOROTATE_IDLE_MS = 7000;
 const AUTOROTATE_SPEED = 0.35;
 
-/** Initial overview camera — fully zoomed out along the existing view direction. */
-const INITIAL_CAM_DIR = new THREE.Vector3(-50, 36, -36).normalize();
+/** Fully zoomed-out start — same direction as before, scaled to max distance. */
 const INITIAL_CAMERA_POSITION: [number, number, number] = [
-  INITIAL_CAM_DIR.x * MAX_DISTANCE,
-  INITIAL_CAM_DIR.y * MAX_DISTANCE,
-  INITIAL_CAM_DIR.z * MAX_DISTANCE,
+  -66.57, 47.93, -47.93,
 ];
 
 function isFullyZoomedOut(distance: number) {
@@ -188,12 +185,31 @@ function Scene({
 }) {
   const { camera } = useThree();
 
-  useFrame(() => {
+  useFrame((_, delta) => {
     const controls = controlsRef.current;
     if (!controls) return;
 
     const dist = camera.position.distanceTo(controls.target);
     cameraDistRef.current = dist;
+
+    const target = focusRef.current;
+    if (target) {
+      const look = new THREE.Vector3(
+        target.x + LANDING_LOOK_BIAS.x * 0.4,
+        target.y + LANDING_LOOK_BIAS.y * 0.4,
+        target.z + LANDING_LOOK_BIAS.z * 0.4,
+      );
+      const desiredCam = new THREE.Vector3(
+        target.x + LANDING_CAMERA_OFFSET.x,
+        target.y + LANDING_CAMERA_OFFSET.y,
+        target.z + LANDING_CAMERA_OFFSET.z,
+      );
+      camera.position.lerp(desiredCam, 1 - Math.exp(-2.4 * delta));
+      controls.target.lerp(look, 1 - Math.exp(-2.4 * delta));
+      controls.autoRotate = false;
+      controls.update();
+      return;
+    }
 
     if (!isFullyZoomedOut(dist)) {
       controls.autoRotate = false;
@@ -207,30 +223,6 @@ function Scene({
       controls.autoRotate = true;
     }
   });
-
-  useFrame((_, delta) => {
-    const target = focusRef.current;
-    if (!target || !controlsRef.current) return;
-    const look = new THREE.Vector3(
-      target.x + LANDING_LOOK_BIAS.x * 0.4,
-      target.y + LANDING_LOOK_BIAS.y * 0.4,
-      target.z + LANDING_LOOK_BIAS.z * 0.4,
-    );
-    const desiredCam = new THREE.Vector3(
-      target.x + LANDING_CAMERA_OFFSET.x,
-      target.y + LANDING_CAMERA_OFFSET.y,
-      target.z + LANDING_CAMERA_OFFSET.z,
-    );
-    camera.position.lerp(desiredCam, 1 - Math.exp(-2.4 * delta));
-    controlsRef.current.target.lerp(look, 1 - Math.exp(-2.4 * delta));
-    controlsRef.current.autoRotate = false;
-    controlsRef.current.update();
-  });
-
-  const stopAutoRotate = useCallback(() => {
-    lastInteractRef.current = performance.now();
-    if (controlsRef.current) controlsRef.current.autoRotate = false;
-  }, [controlsRef, lastInteractRef]);
 
   return (
     <>
@@ -266,8 +258,6 @@ function Scene({
         panSpeed={0.75}
         autoRotate
         autoRotateSpeed={AUTOROTATE_SPEED}
-        onStart={stopAutoRotate}
-        onEnd={stopAutoRotate}
       />
     </>
   );
@@ -301,24 +291,28 @@ export function PhotoGraph() {
     setHover({ node, x: event.clientX, y: event.clientY });
   }, []);
 
+  const stopAutoRotate = useCallback(() => {
+    lastInteractRef.current = performance.now();
+    if (controlsRef.current) controlsRef.current.autoRotate = false;
+  }, []);
+
   const onSelect = useCallback(
     (node: GraphNode) => {
-      lastInteractRef.current = performance.now();
-      if (controlsRef.current) controlsRef.current.autoRotate = false;
+      stopAutoRotate();
       focusRef.current = node;
       const idx = nodes.findIndex((n) => n.id === node.id);
       if (idx >= 0) setLightboxIndex(idx);
     },
-    [nodes],
+    [nodes, stopAutoRotate],
   );
 
   return (
     <div
-      className="relative h-dvh w-full overflow-hidden bg-transparent"
+      className="relative z-[2] h-dvh w-full overflow-hidden bg-black"
+      onPointerDown={stopAutoRotate}
       onWheelCapture={(e) => {
         if (!controlsRef.current) return;
-        lastInteractRef.current = performance.now();
-        controlsRef.current.autoRotate = false;
+        stopAutoRotate();
 
         const shouldPassThrough =
           e.deltaY > 0 && cameraDistRef.current >= PASSTHROUGH_THRESHOLD;
@@ -342,6 +336,7 @@ export function PhotoGraph() {
       }}
     >
       <Canvas
+        className="h-full w-full touch-none"
         camera={{
           position: INITIAL_CAMERA_POSITION,
           fov: 48,
