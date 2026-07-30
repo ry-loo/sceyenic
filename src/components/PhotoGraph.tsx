@@ -149,6 +149,21 @@ function EdgeLines({
 
 const MAX_DISTANCE = 95;
 const PASSTHROUGH_THRESHOLD = 82;
+const FULLY_OUT_EPSILON = 1.25;
+const AUTOROTATE_IDLE_MS = 7000;
+const AUTOROTATE_SPEED = 0.35;
+
+/** Initial overview camera — fully zoomed out along the existing view direction. */
+const INITIAL_CAM_DIR = new THREE.Vector3(-50, 36, -36).normalize();
+const INITIAL_CAMERA_POSITION: [number, number, number] = [
+  INITIAL_CAM_DIR.x * MAX_DISTANCE,
+  INITIAL_CAM_DIR.y * MAX_DISTANCE,
+  INITIAL_CAM_DIR.z * MAX_DISTANCE,
+];
+
+function isFullyZoomedOut(distance: number) {
+  return distance >= MAX_DISTANCE - FULLY_OUT_EPSILON;
+}
 
 function Scene({
   nodes,
@@ -159,6 +174,7 @@ function Scene({
   focusRef,
   cameraDistRef,
   controlsRef,
+  lastInteractRef,
 }: {
   nodes: GraphNode[];
   links: { source: string; target: string }[];
@@ -168,14 +184,27 @@ function Scene({
   focusRef: MutableRefObject<GraphNode | null>;
   cameraDistRef: MutableRefObject<number>;
   controlsRef: MutableRefObject<OrbitControlsImpl | null>;
+  lastInteractRef: MutableRefObject<number>;
 }) {
   const { camera } = useThree();
 
   useFrame(() => {
-    if (controlsRef.current) {
-      cameraDistRef.current = camera.position.distanceTo(
-        controlsRef.current.target,
-      );
+    const controls = controlsRef.current;
+    if (!controls) return;
+
+    const dist = camera.position.distanceTo(controls.target);
+    cameraDistRef.current = dist;
+
+    if (!isFullyZoomedOut(dist)) {
+      controls.autoRotate = false;
+      return;
+    }
+
+    if (
+      !controls.autoRotate &&
+      performance.now() - lastInteractRef.current >= AUTOROTATE_IDLE_MS
+    ) {
+      controls.autoRotate = true;
     }
   });
 
@@ -194,8 +223,14 @@ function Scene({
     );
     camera.position.lerp(desiredCam, 1 - Math.exp(-2.4 * delta));
     controlsRef.current.target.lerp(look, 1 - Math.exp(-2.4 * delta));
+    controlsRef.current.autoRotate = false;
     controlsRef.current.update();
   });
+
+  const stopAutoRotate = useCallback(() => {
+    lastInteractRef.current = performance.now();
+    if (controlsRef.current) controlsRef.current.autoRotate = false;
+  }, [controlsRef, lastInteractRef]);
 
   return (
     <>
@@ -229,6 +264,10 @@ function Scene({
         zoomSpeed={1.15}
         rotateSpeed={0.55}
         panSpeed={0.75}
+        autoRotate
+        autoRotateSpeed={AUTOROTATE_SPEED}
+        onStart={stopAutoRotate}
+        onEnd={stopAutoRotate}
       />
     </>
   );
@@ -246,7 +285,8 @@ export function PhotoGraph() {
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
   const focusRef = useRef<GraphNode | null>(null);
   const controlsRef = useRef<OrbitControlsImpl | null>(null);
-  const cameraDistRef = useRef(0);
+  const cameraDistRef = useRef(MAX_DISTANCE);
+  const lastInteractRef = useRef(0);
 
   const images: PortfolioImage[] = useMemo(
     () => nodes.map((n) => n.image),
@@ -263,6 +303,8 @@ export function PhotoGraph() {
 
   const onSelect = useCallback(
     (node: GraphNode) => {
+      lastInteractRef.current = performance.now();
+      if (controlsRef.current) controlsRef.current.autoRotate = false;
       focusRef.current = node;
       const idx = nodes.findIndex((n) => n.id === node.id);
       if (idx >= 0) setLightboxIndex(idx);
@@ -275,6 +317,9 @@ export function PhotoGraph() {
       className="relative h-dvh w-full overflow-hidden bg-transparent"
       onWheelCapture={(e) => {
         if (!controlsRef.current) return;
+        lastInteractRef.current = performance.now();
+        controlsRef.current.autoRotate = false;
+
         const shouldPassThrough =
           e.deltaY > 0 && cameraDistRef.current >= PASSTHROUGH_THRESHOLD;
 
@@ -297,7 +342,12 @@ export function PhotoGraph() {
       }}
     >
       <Canvas
-        camera={{ position: [-50, 36, -36], fov: 48, near: 0.1, far: 300 }}
+        camera={{
+          position: INITIAL_CAMERA_POSITION,
+          fov: 48,
+          near: 0.1,
+          far: 300,
+        }}
         dpr={[1, 1.75]}
         gl={{ antialias: true, alpha: true, premultipliedAlpha: false }}
         onCreated={({ gl }) => {
@@ -315,6 +365,7 @@ export function PhotoGraph() {
           focusRef={focusRef}
           cameraDistRef={cameraDistRef}
           controlsRef={controlsRef}
+          lastInteractRef={lastInteractRef}
         />
       </Canvas>
 
